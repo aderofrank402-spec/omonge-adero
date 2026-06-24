@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\SiteContentController;
 use App\Http\Controllers\Admin\SubscriberController as AdminSubscriberController;
 use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\SubscriberController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 use App\Models\ContactSubmission;
@@ -22,12 +24,24 @@ Route::get('/blogs/{slug}', [PublicController::class, 'showBlog'])->name('blogs.
 Route::get('/insights', [PublicController::class, 'insights'])->name('insights.index');
 Route::get('/insights/{slug}', [PublicController::class, 'showInsight'])->name('insights.show');
 Route::get('/contact', [PublicController::class, 'contact'])->name('contact');
-Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
+Route::get('/faq', [PublicController::class, 'faq'])->name('faq');
+Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit')->middleware('throttle:3,1');
 Route::get('/search', [App\Http\Controllers\Public\SearchController::class, 'index'])->name('search');
-Route::post('/subscribe', [SubscriberController::class, 'subscribe'])->name('subscribe');
+Route::post('/subscribe', [SubscriberController::class, 'subscribe'])->name('subscribe')->middleware('throttle:3,1');
 Route::get('subscribe/verify/{token}', [SubscriberController::class, 'verify'])->name('subscribe.verify');
 Route::get('/privacy-policy', [PublicController::class, 'privacy'])->name('privacy');
 Route::get('/terms-of-service', [PublicController::class, 'terms'])->name('terms');
+Route::get('/sitemap.xml', [App\Http\Controllers\Public\SitemapController::class, 'index'])->name('sitemap');
+
+// Location Pages (SEO)
+Route::get('/lawyer-in-westlands', [App\Http\Controllers\Public\LocationController::class, 'westlands'])->name('locations.westlands');
+Route::get('/lawyer-in-upper-hill', [App\Http\Controllers\Public\LocationController::class, 'upperHill'])->name('locations.upper-hill');
+Route::get('/lawyer-in-kilimani', [App\Http\Controllers\Public\LocationController::class, 'kilimani'])->name('locations.kilimani');
+
+
+// Comment Routes
+Route::post('/posts/{post:slug}/comments', [CommentController::class, 'store'])->name('comments.store')->middleware('throttle:3,1');
+Route::get('/posts/{post:slug}/comments/load-more', [CommentController::class, 'loadMore'])->name('comments.loadMore');
 
 // Admin Routes (Protected)
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
@@ -40,6 +54,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         $subscribersCount = Subscriber::count();
         $contactSubmissionsCount = ContactSubmission::count();
         $unreadContactsCount = ContactSubmission::where('is_read', false)->count();
+        $totalComments = App\Models\Comment::count();
+        $pendingComments = App\Models\Comment::where('approved', false)->count();
 
         return view('admin.dashboard', compact(
             'totalPosts',
@@ -49,12 +65,17 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             'insightsCount',
             'subscribersCount',
             'contactSubmissionsCount',
-            'unreadContactsCount'
+            'unreadContactsCount',
+            'totalComments',
+            'pendingComments'
         ));
     })->name('dashboard');
 
     Route::resource('posts', AdminPostController::class);
-    Route::resource('content', SiteContentController::class)->only(['index', 'update']);
+
+    // Content Management (Singleton-style)
+    Route::get('/content', [SiteContentController::class, 'index'])->name('content.index');
+    Route::put('/content', [SiteContentController::class, 'update'])->name('content.update');
 
     // Subscribers
     Route::get('subscribers/export', [AdminSubscriberController::class, 'export'])->name('subscribers.export');
@@ -68,6 +89,11 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::delete('contact-submissions/{submission}', [ContactSubmissionController::class, 'destroy'])->name('contact-submissions.destroy');
     Route::get('contact-submissions/{submission}/reply', [ContactSubmissionController::class, 'reply'])->name('contact-submissions.reply');
     Route::post('contact-submissions/{submission}/reply', [ContactSubmissionController::class, 'sendReply'])->name('contact-submissions.send-reply');
+
+    // Comments (Admin Moderation)
+    Route::get('comments', [AdminCommentController::class, 'index'])->name('comments.index');
+    Route::patch('comments/{comment}/approve', [AdminCommentController::class, 'approve'])->name('comments.approve');
+    Route::delete('comments/{comment}', [AdminCommentController::class, 'destroy'])->name('comments.destroy');
 });
 
 Route::middleware('auth')->group(function () {

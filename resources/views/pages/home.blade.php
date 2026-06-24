@@ -1,37 +1,45 @@
+@php use App\Models\SiteContent; @endphp
 @extends('layouts.site')
 
 @section('content')
     <!-- Hero Section -->
     <header
-        class="relative pt-20 min-h-screen flex items-center bg-gradient-to-br from-[#E0E7FF] to-[#F5F7FA] dark:from-slate-900 dark:to-slate-800 transition-colors duration-300">
-        <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+        class="relative pt-24 pb-12 md:pt-20 md:pb-0 md:min-h-screen flex flex-col md:flex-row items-center bg-gradient-to-br from-[#E0E7FF] to-[#F5F7FA] dark:from-slate-900 dark:to-slate-800 transition-colors duration-300 overflow-hidden">
+
+        <!-- Background Watermark Logo -->
+        <div
+            class="absolute inset-0 flex items-center justify-start pointer-events-none z-0 px-4 sm:px-12 md:px-24 overflow-hidden">
+            <img src="{{ asset('assets/images/aderologo.jpeg') }}" alt=""
+                class="w-[120%] md:w-[800px] opacity-[0.05] md:opacity-[0.1] dark:opacity-[0.1] object-contain select-none rounded-2xl -translate-x-12 translate-y-12 md:translate-y-0">
+        </div>
+
+        <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-8 md:gap-16 items-center relative z-10">
             <!-- Left: Text Content -->
             <div class="py-12 md:py-24 space-y-10 order-2 md:order-1 fade-up">
                 <div class="space-y-4">
                     <span class="text-xs font-bold tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase">Advocate
-                        of the High
-                        Court</span>
+                        of the High Court</span>
                     <h1
-                        class="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.9] text-slate-900 dark:text-white transition-colors">
-                        {{ $content['hero.title.line1']->value ?? 'Justice' }} <br />
+                        class="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight sm:leading-[0.9] text-slate-900 dark:text-white transition-colors">
+                        {{ SiteContent::getValue('hero.title.line1', 'Justice') }} <br />
                         <span
-                            class="italic text-slate-600 dark:text-slate-400 font-normal transition-colors">{{ $content['hero.title.line2']->value ?? 'Requires' }}</span>
+                            class="italic text-slate-600 dark:text-slate-400 font-normal transition-colors">{{ SiteContent::getValue('hero.title.line2', 'Requires') }}</span>
                         <br />
-                        {{ $content['hero.title.line3']->value ?? 'Clarity.' }}
+                        {{ SiteContent::getValue('hero.title.line3', 'Clarity.') }}
                     </h1>
                 </div>
                 <div
-                    class="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-md leading-relaxed transition-colors">
-                    {!! $content['hero.description']->value ?? 'I provide strategic counsel for businesses and individuals, ensuring your rights are protected with unwavering integrity and precision.' !!}
+                    class="font-serif text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-md leading-relaxed transition-colors">
+                    {!! SiteContent::getValue('hero.description', 'I provide strategic legal counsel for businesses and individuals in Kenya. As an Advocate of the High Court, I ensure your rights are protected with unwavering integrity.') !!}
                 </div>
-                <div class="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+                <div class="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 w-full sm:w-auto">
                     <a href="{{ route('contact') }}"
-                        class="px-10 py-4 bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 transition-all shadow-lg hover:shadow-xl text-xs font-bold tracking-widest uppercase">
+                        class="px-10 py-4 bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 transition-all shadow-lg hover:shadow-xl text-xs font-bold tracking-widest uppercase text-center">
                         Get in Touch
                     </a>
-                    <a href="#experience"
-                        class="px-10 py-4 bg-white border border-slate-200 text-slate-900 hover:bg-slate-50 dark:bg-transparent dark:border-slate-600 dark:text-white dark:hover:bg-slate-800 transition-all text-xs font-bold tracking-widest uppercase">
-                        My Work
+                    <a href="{{ route('about') }}"
+                        class="px-10 py-4 bg-white border border-slate-200 text-slate-900 hover:bg-slate-50 dark:bg-transparent dark:border-slate-600 dark:text-white dark:hover:bg-slate-800 transition-all text-xs font-bold tracking-widest uppercase text-center">
+                        Learn More
                     </a>
                 </div>
             </div>
@@ -39,204 +47,93 @@
             <!-- Right: Image -->
             <div class="h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] w-full relative order-1 md:order-2 fade-up delay-200">
                 <div class="absolute inset-0 bg-slate-200 dark:bg-slate-800 overflow-hidden shadow-2xl transition-colors">
-                    <img src="{{ asset('assets/images/brian.jpeg') }}" alt="Brian Adero"
+                    <img src="{{ SiteContent::getImageUrl('hero.image', 'assets/images/brian.jpeg') }}"
+                        alt="Omonge Adero - Lawyer in Nairobi"
                         class="w-full h-full object-cover transition-transform duration-[2s] hover:scale-105">
                 </div>
                 <!-- Floating Card -->
                 <div
                     class="absolute bottom-12 -left-12 bg-white dark:bg-slate-800 dark:text-white p-8 shadow-xl max-w-xs hidden md:block transition-colors">
                     <p class="font-serif text-2xl italic text-slate-900 dark:text-white">
-                        "{{ $content['hero.floating.quote']->value ?? 'Excellence is not an act, but a habit.' }}"</p>
+                        "{{ SiteContent::getValue('hero.floating.quote', 'Excellence is not an act, but a habit.') }}"
+                    </p>
                 </div>
             </div>
         </div>
     </header>
 
     <!-- About Section -->
-    <section id="about" class="py-16 sm:py-24 md:py-32 bg-white dark:bg-slate-900 transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 grid md:grid-cols-12 gap-8 md:gap-16">
+    <section id="about" class="py-16 sm:py-24 md:py-32 bg-slate-50 dark:bg-slate-900/50 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16">
             <div class="md:col-span-4 fade-up">
-                <h2 class="font-serif text-3xl sm:text-4xl text-slate-900 dark:text-white mb-6 transition-colors">
-                    {{ $content['home.about.title']->value ?? 'About Brian' }}
+                <h2
+                    class="font-serif font-bold text-3xl sm:text-4xl md:text-5xl text-slate-900 dark:text-white mb-6 transition-colors">
+                    {{ SiteContent::getValue('home.about.title', 'About Omonge Adero') }}
                 </h2>
                 <div class="h-0.5 w-16 bg-slate-900 dark:bg-slate-600 mb-6 transition-colors"></div>
-                <p class="text-slate-500 font-medium">{{ $content['home.about.subtitle']->value ?? 'Since 2020' }}</p>
+                <p class="text-slate-500 font-medium text-lg">
+                    {{ SiteContent::getValue('home.about.subtitle', 'Since 2020') }}</p>
             </div>
             <div
                 class="md:col-span-8 space-y-8 text-slate-600 dark:text-slate-300 leading-loose fade-up delay-100 transition-colors">
                 <p class="text-xl sm:text-2xl text-slate-900 dark:text-white font-serif italic mb-8 transition-colors">
-                    "{{ $content['home.about.quote']->value ?? 'I believe that effective legal representation goes beyond merely knowing the law; it requires understanding the unique human and business dynamics behind every case.' }}"
+                    "{{ SiteContent::getValue('home.about.quote', 'I believe that effective legal representation goes beyond merely knowing the law; it requires understanding the unique human and business dynamics behind every case.') }}"
                 </p>
-                <div class="grid sm:grid-cols-2 gap-6 md:gap-8 text-sm">
+                <div
+                    class="grid sm:grid-cols-2 gap-6 md:gap-8 text-base text-slate-600 dark:text-slate-300 leading-relaxed font-serif">
                     <div>
-                        {!! $content['home.about.p1']->value ?? 'With 4 years of experience practicing at the High Court, I have built a reputation for meticulous preparation and strategic advocacy. My approach is client-centric, ensuring that you are not just represented, but truly heard and understood.' !!}
+                        {!! SiteContent::getValue('home.about.p1', 'With 4 years of experience practicing at the High Court, I have built a reputation for meticulous preparation and strategic advocacy. My approach is client-centric, ensuring that you are not just represented, but truly heard and understood.') !!}
                     </div>
                     <div>
-                        {!! $content['home.about.p2']->value ?? 'Whether navigating complex corporate disputes or sensitive family matters, my commitment remains the same: to provide ethical, aggressive, and effective counsel that secures your future.' !!}
+                        {!! SiteContent::getValue('home.about.p2', 'Whether navigating complex corporate disputes or sensitive family matters, my commitment remains the same: to provide ethical, aggressive, and effective counsel that secures your future.') !!}
                     </div>
                 </div>
-                <div class="pt-8">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/Sig_J._R._R._Tolkien.png" alt="Signature"
-                        class="h-12 opacity-60 dark:opacity-40 invert dark:invert-0">
-                </div>
+
             </div>
         </div>
     </section>
 
     <!-- Quote / Highlight Section -->
-    <section
-        class="py-16 sm:py-24 md:py-32 bg-[#E4E9F2] dark:bg-slate-800 relative overflow-hidden transition-colors duration-300">
-        <div class="absolute top-0 right-0 p-32 opacity-5 pointer-events-none">
-            <svg width="400" height="400" viewBox="0 0 24 24" fill="currentColor">
+    <section class="py-16 sm:py-24 md:py-32 bg-slate-900 relative overflow-hidden transition-colors duration-300">
+        <div class="absolute top-0 right-0 p-32 opacity-10 pointer-events-none">
+            <svg width="400" height="400" viewBox="0 0 24 24" fill="currentColor" class="text-white">
                 <path
                     d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H15.017C14.4647 8 14.017 7.55228 14.017 7V3H19.017C20.6739 3 22.017 4.34315 22.017 6V15C22.017 16.6569 20.6739 18 19.017 18H16.017V21H14.017ZM5.0166 21L5.0166 18C5.0166 16.8954 5.91203 16 7.0166 16H10.0166C10.5689 16 11.0166 15.5523 11.0166 15V9C11.0166 8.44772 10.5689 8 10.0166 8H6.0166C5.46432 8 5.0166 7.55228 5.0166 7V3H10.0166C11.6735 3 13.0166 4.34315 13.0166 6V15C13.0166 16.6569 11.6735 18 10.0166 18H7.0166V21H5.0166Z" />
             </svg>
         </div>
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center fade-up">
-            <blockquote
-                class="font-serif text-3xl sm:text-4xl md:text-5xl leading-tight text-slate-900 dark:text-white mb-8 transition-colors">
-                "{{ $content['quote.main']->value ?? 'I don\'t just win cases; I secure futures. Your success is my singular mission.' }}"
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center fade-up relative z-10">
+            <blockquote class="font-serif text-3xl sm:text-4xl md:text-5xl leading-tight text-white mb-8 transition-colors">
+                "{{ SiteContent::getValue('quote.main', "I don't just win cases; I secure futures. Your success is my singular mission.") }}"
             </blockquote>
             <a href="{{ route('contact') }}"
-                class="inline-block border-b border-slate-900 dark:border-white text-slate-900 dark:text-white pb-1 hover:text-slate-600 dark:hover:text-slate-300 transition-colors text-sm font-bold tracking-widest uppercase">
+                class="inline-block border-b border-white text-white pb-1 hover:text-slate-300 transition-colors text-sm font-bold tracking-widest uppercase">
                 Start a Conversation
             </a>
         </div>
     </section>
 
-    <!-- Experience Section -->
-    <section id="experience" class="py-16 sm:py-24 md:py-32 bg-white dark:bg-slate-900 transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div
-                class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 sm:mb-16 md:mb-24 gap-4 fade-up">
-                <div>
-                    <h2 class="font-serif text-3xl sm:text-4xl text-slate-900 dark:text-white mb-4 transition-colors">
-                        Experience</h2>
-                    <p class="text-slate-500 uppercase tracking-widest text-xs font-bold">Professional Journey</p>
-                </div>
-                <div class="hidden md:block h-px w-32 bg-slate-200 dark:bg-slate-700 mb-4 transition-colors"></div>
-            </div>
-
-            @php
-                $experience = json_decode($content['home.experience']->value ?? '[]', true);
-                if (empty($experience)) {
-                    $experience = [
-                        [
-                            'period' => '2023 - Present',
-                            'title' => 'Senior Associate Advocate',
-                            'company' => 'Ochieng & Associates',
-                            'desc' => 'Leading the corporate litigation department, overseeing complex merger disputes and high-value commercial arbitration. Successfully negotiated settlements totaling over $2M in 2023 alone.'
-                        ],
-                        [
-                            'period' => '2021 - 2023',
-                            'title' => 'Associate Advocate',
-                            'company' => 'Mutuso Dhahabu & Co. Advocates',
-                            'desc' => 'Specialized in Family Law and Civil Litigation. Managed a verified caseload of 40+ active files, appearing before the High Court and Court of Appeal routinely.'
-                        ],
-                        [
-                            'period' => '2020 - 2021',
-                            'title' => 'Legal Trainee',
-                            'company' => 'Kenya School of Law',
-                            'desc' => 'Completed pupillage with distinction. Drafted pleadings, legal opinions, and conducted extensive legal research on constitutional matters.'
-                        ]
-                    ];
-                }
-            @endphp
-
-            <div class="space-y-16 max-w-4xl">
-                @foreach($experience as $exp)
-                    <div
-                        class="grid sm:grid-cols-12 gap-4 sm:gap-6 {{ !$loop->last ? 'border-b border-slate-100 pb-8 sm:pb-12 md:pb-16' : '' }} fade-up">
-                        <div class="sm:col-span-3">
-                            <span class="text-sm font-bold text-slate-400">{{ $exp['period'] }}</span>
-                        </div>
-                        <div class="sm:col-span-9">
-                            <h3 class="text-xl sm:text-2xl font-serif text-slate-900 mb-2">{{ $exp['title'] }}</h3>
-                            <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">{{ $exp['company'] }}</p>
-                            <p class="text-slate-600 leading-relaxed">
-                                {{ $exp['desc'] }}
-                            </p>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    <!-- Education Section -->
-    <section id="education" class="py-32 bg-[#F5F7FA] dark:bg-slate-800 transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-between items-end mb-24 fade-up">
-                <div>
-                    <h2 class="font-serif text-4xl text-slate-900 dark:text-white mb-4 transition-colors">Education</h2>
-                    <p class="text-slate-500 uppercase tracking-widest text-xs font-bold">Academic Background</p>
-                </div>
-                <div class="hidden md:block h-px w-32 bg-slate-200 dark:bg-slate-700 mb-4 transition-colors"></div>
-            </div>
-
-            @php
-                $education = json_decode($content['home.education']->value ?? '[]', true);
-                if (empty($education)) {
-                    $education = [
-                        [
-                            'degree' => 'Post Graduate Diploma',
-                            'institution' => 'Kenya School of Law',
-                            'year' => '2021',
-                            'desc' => 'ATP (Advocates Training Programme) completion with honors.'
-                        ],
-                        [
-                            'degree' => 'Bachelor of Laws (LL.B)',
-                            'institution' => 'University of Nairobi',
-                            'year' => '2019',
-                            'desc' => 'Second Class Honors (Upper Division). Specialization in Commercial Law.'
-                        ]
-                    ];
-                }
-            @endphp
-
-            <div class="grid md:grid-cols-2 gap-12 max-w-5xl">
-                @foreach($education as $edu)
-                    <div
-                        class="bg-white dark:bg-slate-900 p-10 shadow-soft fade-up {{ $loop->iteration > 1 ? 'delay-100' : '' }} transition-colors">
-                        <span
-                            class="text-5xl text-slate-100 dark:text-slate-800 font-serif font-bold absolute -mt-6 -ml-4 pointer-events-none transition-colors">
-                            {{ sprintf('%02d', $loop->iteration) }}
-                        </span>
-                        <div class="relative">
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 transition-colors">
-                                {{ $edu['degree'] }}</h3>
-                            <p class="text-sm text-slate-500 mb-4">{{ $edu['institution'] }} | {{ $edu['year'] }}</p>
-                            <p class="text-slate-600 dark:text-slate-400 transition-colors">{{ $edu['desc'] }}</p>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
 
     <!-- Practice Areas Section -->
     <section
-        class="py-32 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 transition-colors duration-300">
+        class="py-32 bg-white dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-16 fade-up">
-                <h2 class="font-serif text-4xl text-slate-900 dark:text-white mb-4 transition-colors">Areas of Practice</h2>
+                <h2 class="font-serif font-bold text-4xl sm:text-5xl text-slate-900 dark:text-white mb-4 transition-colors">
+                    Areas of Practice</h2>
                 <p class="text-slate-500 uppercase tracking-widest text-xs font-bold">Legal Services I Offer</p>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                @php
-                    $practiceAreas = json_decode($content['home.practice_areas']->value ?? '[]', true);
-                    if (empty($practiceAreas)) {
-                        $practiceAreas = [
-                            ['title' => 'Corporate Law', 'icon' => 'Building', 'desc' => 'Company formation, contracts, compliance, and commercial transactions.'],
-                            ['title' => 'Civil Litigation', 'icon' => 'Gavel', 'desc' => 'Representation in disputes, contract enforcement, and courtroom advocacy.'],
-                            ['title' => 'Family Law', 'icon' => 'Users', 'desc' => 'Divorce, child custody, matrimonial property, and succession matters.']
-                        ];
-                    }
-                @endphp
+            @php
+                $practiceAreas = SiteContent::getValue('home.practice_areas', [
+                    ['title' => 'Corporate Law', 'icon' => 'Building', 'desc' => 'Company formation, contracts, compliance, and commercial transactions.'],
+                    ['title' => 'Civil Litigation', 'icon' => 'Gavel', 'desc' => 'Representation in disputes, contract enforcement, and courtroom advocacy.'],
+                    ['title' => 'Family Law', 'icon' => 'Users', 'desc' => 'Divorce, child custody, matrimonial property, and succession matters.']
+                ]);
+            @endphp
 
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 @foreach($practiceAreas as $index => $area)
-                    <div class="text-center p-8 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors fade-up bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-lg"
+                    <div class="text-center p-8 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors fade-up bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-lg shadow-soft"
                         style="animation-delay: {{ $index * 100 }}ms">
                         <div
                             class="w-16 h-16 bg-slate-900 text-white dark:bg-slate-800 dark:text-slate-200 rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
@@ -290,10 +187,12 @@
                                 </svg>
                             @endif
                         </div>
-                        <h3 class="font-serif text-xl text-slate-900 dark:text-white mb-3 transition-colors">
-                            {{ $area['title'] ?? 'Service Title' }}</h3>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed transition-colors">
-                            {{ $area['desc'] ?? 'Service description goes here.' }}</p>
+                        <h3 class="font-serif font-bold text-xl text-slate-900 dark:text-white mb-3 transition-colors">
+                            {{ $area['title'] ?? 'Service Title' }}
+                        </h3>
+                        <p class="text-base text-slate-600 dark:text-slate-400 leading-relaxed transition-colors">
+                            {{ $area['desc'] ?? 'Service description goes here.' }}
+                        </p>
                     </div>
                 @endforeach
             </div>
@@ -302,10 +201,9 @@
             <div class="text-center mt-16 fade-up">
                 <p class="text-slate-600 mb-6">Need legal assistance in any of these areas?</p>
                 @php
-                    $bookingUrl = $content['general.booking_url']->value ?? '';
+                    $bookingUrl = SiteContent::getValue('general.booking_url', 'https://calendly.com/aderofrank401/30min');
                 @endphp
-                <a href="{{ $bookingUrl ?: route('contact') }}"
-                   @if($bookingUrl) target="_blank" rel="noopener noreferrer" @endif
+                <a href="{{ $bookingUrl }}" target="_blank" rel="noopener noreferrer"
                     class="inline-block px-8 py-3 bg-slate-900 text-white hover:bg-slate-800 transition-colors text-sm font-bold tracking-widest uppercase">
                     Schedule a Consultation
                 </a>
@@ -319,7 +217,9 @@
             <div class="max-w-7xl mx-auto px-6">
                 <div class="flex justify-between items-end mb-16 fade-up">
                     <div>
-                        <h2 class="font-serif text-4xl text-slate-900 dark:text-white mb-4 transition-colors">Latest Updates
+                        <h2
+                            class="font-serif font-bold text-4xl sm:text-5xl text-slate-900 dark:text-white mb-4 transition-colors">
+                            Latest Updates
                         </h2>
                         <p class="text-slate-500 uppercase tracking-widest text-xs font-bold">Insights & Perspectives</p>
                     </div>
@@ -334,7 +234,7 @@
                     </div>
                 </div>
 
-                <div class="grid md:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     @foreach($recentPosts as $post)
                         <article
                             class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm hover:shadow-soft transition-all duration-300 group fade-up">
@@ -342,7 +242,7 @@
                                 class="block h-full flex flex-col">
                                 <div class="aspect-[16/9] overflow-hidden bg-slate-200 relative">
                                     @if($post->image_path)
-                                        <img src="{{ asset('storage/' . $post->image_path) }}" alt="{{ $post->title }}"
+                                        <img src="{{ $post->image_url }}" alt="{{ $post->title }}" loading="lazy"
                                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                                     @else
                                         <div class="w-full h-full flex items-center justify-center text-slate-400 bg-slate-100">
@@ -396,23 +296,23 @@
     <section id="achievements" class="py-32 bg-slate-900 text-white">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-20 fade-up">
-                <h2 class="font-serif text-4xl mb-4">Achievements</h2>
-                <p class="text-slate-400 uppercase tracking-widest text-xs font-bold">Recognition & Awards</p>
+                <h2 class="font-serif text-4xl mb-4">{{ SiteContent::getValue('home.achievements.title', 'Achievements') }}
+                </h2>
+                <p class="text-slate-400 uppercase tracking-widest text-xs font-bold">
+                    {{ SiteContent::getValue('home.achievements.subtitle', 'Recognition & Awards') }}
+                </p>
             </div>
 
             @php
-                $achievements = json_decode($content['home.achievements']->value ?? '[]', true);
-                if (empty($achievements)) {
-                    $achievements = [
-                        ['number' => '2023', 'title' => 'Top litigator', 'desc' => 'Law Society of Kenya (Nairobi Branch)'],
-                        ['number' => '50+', 'title' => 'Cases Won', 'desc' => 'High Court & Magistrates Court'],
-                        ['number' => '98%', 'title' => 'Client Satisfaction', 'desc' => 'Based on exit surveys'],
-                        ['number' => 'Pro', 'title' => 'Pro Bono Award', 'desc' => 'Service to Community']
-                    ];
-                }
+                $achievements = SiteContent::getValue('home.achievements', [
+                    ['number' => '2023', 'title' => 'Top litigator', 'desc' => 'Law Society of Kenya (Nairobi Branch)'],
+                    ['number' => '50+', 'title' => 'Cases Won', 'desc' => 'High Court & Magistrates Court'],
+                    ['number' => '98%', 'title' => 'Client Satisfaction', 'desc' => 'Based on exit surveys'],
+                    ['number' => 'Pro', 'title' => 'Pro Bono Award', 'desc' => 'Service to Community']
+                ]);
             @endphp
 
-            <div class="grid md:grid-cols-4 gap-8 text-center">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
                 @foreach($achievements as $ach)
                     <div class="p-8 border border-white/10 hover:bg-white/5 transition-colors fade-up"
                         style="animation-delay: {{ $loop->index * 100 }}ms">
@@ -426,106 +326,110 @@
     </section>
 
     <!-- Contact Section -->
-        <section id="contact" class="py-32 bg-white">
-            <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
-                <div class="fade-up">
-                    <h2 class="font-serif text-5xl text-slate-900 mb-8">Get in Touch</h2>
-                    <p class="text-slate-600 text-lg leading-relaxed mb-12">
-                        Whether you have a question about a case, need legal advice, or want to book a consultation, I'm
-                        here to help.
-                    </p>
+    <section id="contact" class="py-32 bg-white">
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
+            <div class="fade-up">
+                <h2 class="font-serif font-bold text-5xl text-slate-900 mb-8">
+                    {{ SiteContent::getValue('home.contact.title', 'Get in Touch') }}
+                </h2>
+                <p class="text-slate-600 text-lg leading-relaxed mb-12">
+                    {{ SiteContent::getValue('home.contact.text', "Whether you have a question about a case, need legal advice, or want to book a consultation, I'm here to help.") }}
+                </p>
 
-                    <div class="space-y-8">
-                        <div class="flex items-start gap-6">
-                            <div class="w-12 h-12 bg-slate-50 flex items-center justify-center text-slate-900">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-900 mb-1">Phone</h3>
-                                <a href="tel:+254721485244" class="text-slate-500 hover:text-slate-900 transition-colors">+254
-                                    721 485 244</a>
-                            </div>
+                <div class="space-y-8">
+                    <div class="flex items-start gap-6">
+                        <div class="w-12 h-12 bg-slate-50 flex items-center justify-center text-slate-900">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                            </svg>
                         </div>
-
-                        <div class="flex items-start gap-6">
-                            <div class="w-12 h-12 bg-slate-50 flex items-center justify-center text-slate-900">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect width="20" height="16" x="2" y="4" rx="2" />
-                                    <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-900 mb-1">Email</h3>
-                                <a href="mailto:omongeadero@gmail.com"
-                                    class="text-slate-500 hover:text-slate-900 transition-colors">omongeadero@gmail.com</a>
-                            </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900 mb-1">Phone</h3>
+                            <a href="tel:{{ str_replace(' ', '', SiteContent::getValue('contact.phone', '+254721485244')) }}"
+                                class="text-slate-500 hover:text-slate-900 transition-colors">
+                                {{ SiteContent::getValue('contact.phone', '+254 721 485 244') }}
+                            </a>
                         </div>
+                    </div>
 
-                        <div class="flex items-start gap-6">
-                            <div class="w-12 h-12 bg-slate-50 flex items-center justify-center text-slate-900">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                    <circle cx="12" cy="10" r="3" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-900 mb-1">Location</h3>
-                                <p class="text-slate-500">Nairobi, Kenya</p>
-                            </div>
+                    <div class="flex items-start gap-6">
+                        <div class="w-12 h-12 bg-slate-50 flex items-center justify-center text-slate-900">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="20" height="16" x="2" y="4" rx="2" />
+                                <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900 mb-1">Email</h3>
+                            <a href="mailto:{{ SiteContent::getValue('contact.email', 'omongeadero@gmail.com') }}"
+                                class="text-slate-500 hover:text-slate-900 transition-colors">{{
+                                SiteContent::getValue('contact.email', 'omongeadero@gmail.com') }}</a>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-6">
+                        <div class="w-12 h-12 bg-slate-50 flex items-center justify-center text-slate-900">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                                <circle cx="12" cy="10" r="3" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900 mb-1">Location</h3>
+                            <p class="text-slate-500">{{ SiteContent::getValue('contact.location', 'Nairobi, Kenya') }}</p>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="bg-[#F5F7FA] p-10 md:p-12 fade-up delay-200">
-                    <form class="space-y-6">
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div class="space-y-2">
-                                <label class="text-xs font-bold uppercase tracking-wider text-slate-500">First Name</label>
-                                <input type="text"
-                                    class="w-full bg-white border-none p-4 text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none"
-                                    placeholder="John">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Last Name</label>
-                                <input type="text"
-                                    class="w-full bg-white border-none p-4 text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none"
-                                    placeholder="Doe">
-                            </div>
-                        </div>
-
+            <div class="bg-[#F5F7FA] p-10 md:p-12 fade-up delay-200">
+                <form class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
                         <div class="space-y-2">
-                            <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Email</label>
-                            <input type="email"
-                                class="w-full bg-white border-none p-4 text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none"
-                                placeholder="john@example.com">
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Subject</label>
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-500">First Name</label>
                             <input type="text"
                                 class="w-full bg-white border-none p-4 text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none"
-                                placeholder="Legal Inquiry">
+                                placeholder="John">
                         </div>
-
                         <div class="space-y-2">
-                            <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Message</label>
-                            <textarea
-                                class="w-full bg-white border-none p-4 text-slate-900 h-32 focus:ring-2 focus:ring-slate-900 outline-none resize-none"
-                                placeholder="How can I help you?"></textarea>
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Last Name</label>
+                            <input type="text"
+                                class="w-full bg-white border-none p-4 text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none"
+                                placeholder="Doe">
                         </div>
+                    </div>
 
-                        <button type="button"
-                            class="w-full py-4 bg-slate-900 text-white font-bold uppercase tracking-widest hover:bg-slate-800 transition-colors">
-                            Submit Request
-                        </button>
-                    </form>
-                </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Email</label>
+                        <input type="email"
+                            class="w-full bg-white border-none p-4 text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none"
+                            placeholder="john@example.com">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Subject</label>
+                        <input type="text"
+                            class="w-full bg-white border-none p-4 text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none"
+                            placeholder="Legal Inquiry">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Message</label>
+                        <textarea
+                            class="w-full bg-white border-none p-4 text-slate-900 h-32 focus:ring-2 focus:ring-slate-900 outline-none resize-none"
+                            placeholder="How can I help you?"></textarea>
+                    </div>
+
+                    <button type="button"
+                        class="w-full py-4 bg-slate-900 text-white font-bold uppercase tracking-widest hover:bg-slate-800 transition-colors">
+                        Submit Request
+                    </button>
+                </form>
             </div>
-        </section>
+        </div>
+    </section>
 @endsection

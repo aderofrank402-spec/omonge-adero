@@ -47,7 +47,7 @@
                                     <div class="md:w-1/3 shrink-0">
                                         <div
                                             class="aspect-video bg-slate-200 dark:bg-slate-700 overflow-hidden rounded-lg transition-colors">
-                                            <img src="{{ asset('storage/' . $post->image_path) }}" alt="{{ $post->title }}"
+                                            <img src="{{ $post->image_url }}" alt="{{ $post->title }}" loading="lazy"
                                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
                                         </div>
                                     </div>

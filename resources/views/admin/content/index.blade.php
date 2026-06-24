@@ -1,815 +1,1030 @@
-@extends('layouts.admin')
-
-@section('page-title', 'Site Content Manager')
-@section('page-subtitle', 'Edit all website content (Homepage, About, Contact)')
+@php use App\Models\SiteContent; @endphp@extends('layouts.admin')@section('page-title', 'Site Content Manager')@section('page-subtitle', 'Manage all website text, images, and configuration.')
 
 @section('content')
-    <style>
-        .tab-button {
-            transition: all 0.2s;
-        }
-
-        .tab-button.active {
-            background-color: #1e293b;
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-    </style>
-
-    <div class="max-w-6xl">
-        <!-- Tab Navigation -->
-        <div class="bg-white rounded-t-lg border border-slate-200 border-b-0">
-            <div class="flex gap-2 p-4 overflow-x-auto">
-                <button onclick="switchTab('homepage')"
-                    class="tab-button active px-6 py-3 rounded-lg font-medium whitespace-nowrap">
-                    Homepage
-                </button>
-                <button onclick="switchTab('about')" class="tab-button px-6 py-3 rounded-lg font-medium whitespace-nowrap">
-                    About Page
-                </button>
-                <button onclick="switchTab('contact')"
-                    class="tab-button px-6 py-3 rounded-lg font-medium whitespace-nowrap">
-                    Contact Page
-                </button>
-
-                <button onclick="switchTab('testimonials')"
-                    class="tab-button px-6 py-3 rounded-lg font-medium whitespace-nowrap">
-                    Testimonials
-                </button>
-                <button onclick="switchTab('legal')" class="tab-button px-6 py-3 rounded-lg font-medium whitespace-nowrap">
-                    Legal Pages
-                </button>
-            </div>
-        </div>
-
-        <form action="{{ route('admin.content.update', 1) }}" method="POST" enctype="multipart/form-data"
-            class="bg-white rounded-b-lg border border-slate-200 p-8">
+    <div class="max-w-7xl mx-auto pb-20">
+        <form action="{{ route('admin.content.update') }}" method="POST" enctype="multipart/form-data" id="contentForm"
+            novalidate>
             @csrf
             @method('PUT')
+            <input type="hidden" name="page" value="all">
 
-            <!-- Homepage Tab -->
-            <div id="homepage-tab" class="tab-content active space-y-8">
-                <!-- Hero Section -->
-                <div class="border-b border-slate-200 pb-8">
-                    <h3 class="text-xl font-bold text-slate-900 mb-6">Hero Section</h3>
+            @if($errors->any())
+                <div class="mb-6 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg">
+                    <ul class="list-disc pl-5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-                    <div class="space-y-6">
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Hero Title Line 1</label>
-                                <input type="text" name="content[hero.title.line1]"
-                                    value="{{ $content['hero.title.line1']->value ?? 'Justice' }}"
-                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg">
-                                <p class="mt-1 text-xs text-slate-500">First line of the main title</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Hero Title Line 2
-                                    (Italic)</label>
-                                <input type="text" name="content[hero.title.line2]"
-                                    value="{{ $content['hero.title.line2']->value ?? 'Requires' }}"
-                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg">
-                            </div>
-                        </div>
+            <!-- Tab Navigation -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 mb-8 overflow-x-auto">
+                <div class="flex items-center px-4 py-2 border-b border-slate-100 bg-slate-50/50 min-w-max">
+                    <button type="button" onclick="switchTab('global')"
+                        class="tab-btn active px-6 py-4 text-sm font-bold uppercase tracking-wider border-b-2 border-slate-900 text-slate-900"
+                        data-tab="global">Global & SEO</button>
+                    <button type="button" onclick="switchTab('home')"
+                        class="tab-btn px-6 py-4 text-sm font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-slate-600"
+                        data-tab="home">Home Page</button>
+                    <button type="button" onclick="switchTab('about')"
+                        class="tab-btn px-6 py-4 text-sm font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-slate-600"
+                        data-tab="about">About Page</button>
+                    <!-- Resume merged into Home -->
+                    <button type="button" onclick="switchTab('contact')"
+                        class="tab-btn px-6 py-4 text-sm font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-slate-600"
+                        data-tab="contact">Contact & Social</button>
+                    <button type="button" onclick="switchTab('legal')"
+                        class="tab-btn px-6 py-4 text-sm font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-slate-600"
+                        data-tab="legal">Legal Pages</button>
+                </div>
+            </div>
 
+            <!-- Sticky Publish Button -->
+            <div class="fixed bottom-6 right-6 z-40">
+                <button type="submit" form="contentForm"
+                    onclick="this.innerHTML='Saving...'; this.classList.add('opacity-75', 'cursor-not-allowed');"
+                    class="bg-slate-900 text-white px-8 py-4 rounded-full font-bold text-sm tracking-wide shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Save All Changes
+                </button>
+            </div>
+
+            <!-- GLOBAL TAB -->
+            <div id="tab-global" class="tab-content space-y-8">
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Global Site Identity</h3>
+                    <div class="grid gap-6">
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Hero Title Line 3</label>
-                            <input type="text" name="content[hero.title.line3]"
-                                value="{{ $content['hero.title.line3']->value ?? 'Clarity.' }}"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Site Name</label>
+                            <input type="text" name="content[site.name]"
+                                value="{{ SiteContent::getValue('site.name', 'Brian Adero') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
                         </div>
-
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Hero Description</label>
-                            <textarea name="content[hero.description]" rows="3"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg summernote">{{ $content['hero.description']->value ?? 'I provide strategic counsel for businesses and individuals, ensuring your rights are protected with unwavering integrity and precision.' }}</textarea>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Site Description
+                                (SEO)</label>
+                            <textarea name="content[site.description]" rows="2"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">{{ SiteContent::getValue('site.description', 'Advocate of the High Court of Kenya') }}</textarea>
                         </div>
-
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Hero Profile Image</label>
-                            <input type="file" name="hero_image" accept="image/*"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg">
-                            <p class="mt-1 text-xs text-slate-500">Current: brian.jpeg (Leave empty to keep current image)
-                            </p>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Booking URL (Calendly,
+                                etc.)</label>
+                            <input type="url" name="content[general.booking_url]"
+                                value="{{ SiteContent::getValue('general.booking_url', 'https://calendly.com/aderofrank401/30min') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
                         </div>
-
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Floating Card Quote</label>
-                            <textarea name="content[hero.floating.quote]" rows="2"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg">{{ $content['hero.floating.quote']->value ?? 'Excellence is not an act, but a habit.' }}</textarea>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Footer Copyright
+                                Text</label>
+                            <input type="text" name="content[footer.copyright]"
+                                value="{{ SiteContent::getValue('footer.copyright', '© 2026 Brian Adero. All rights reserved.') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
                         </div>
                     </div>
                 </div>
 
-                <!-- About Section (on Homepage) -->
-                <div class="border-b border-slate-200 pb-8">
-                    <h3 class="text-xl font-bold text-slate-900 mb-6">About Section (Homepage)</h3>
-
-                    <div class="space-y-6">
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Branding & Logos</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Favicon -->
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Section Title</label>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Favicon / Small
+                                Logo</label>
+                            <div class="flex items-center gap-4">
+                                <!-- Note: Keys matched to what might be used in layout, assuming layout uses 'favicon' or sim. Defaulting to new key structure. -->
+                                <div
+                                    class="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200">
+                                    <img src="{{ asset(SiteContent::getValue('branding.favicon', 'assets/images/aderologo.jpeg')) }}"
+                                        class="w-full h-full object-cover" id="preview-favicon">
+                                </div>
+                                <input type="file" name="images[branding.favicon]" class="text-sm text-slate-500"
+                                    onchange="previewImage(this, 'preview-favicon')">
+                            </div>
+                        </div>
+                        <!-- Main Logo -->
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Main Logo (Header)</label>
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200">
+                                    <img src="{{ asset(SiteContent::getValue('branding.logo_main', 'assets/images/aderologo.jpeg')) }}"
+                                        class="w-full h-full object-cover" id="preview-logo">
+                                </div>
+                                <input type="file" name="images[branding.logo_main]" class="text-sm text-slate-500"
+                                    onchange="previewImage(this, 'preview-logo')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HOME TAB -->
+            <div id="tab-home" class="tab-content hidden space-y-8">
+                <!-- Hero Section -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-serif font-bold text-slate-900">Hero Section</h3>
+                        <span class="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-bold uppercase">Above The
+                            Fold</span>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Title Line 1</label>
+                                <input type="text" name="content[hero.title.line1]"
+                                    value="{{ SiteContent::getValue('hero.title.line1', 'Justice') }}"
+                                    class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-lg font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Title Line 2
+                                    (Italic)</label>
+                                <input type="text" name="content[hero.title.line2]"
+                                    value="{{ SiteContent::getValue('hero.title.line2', 'Requires') }}"
+                                    class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-lg italic font-serif">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Title Line 3</label>
+                                <input type="text" name="content[hero.title.line3]"
+                                    value="{{ SiteContent::getValue('hero.title.line3', 'Clarity.') }}"
+                                    class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-lg font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Subtext / Intro</label>
+                                <textarea name="content[hero.description]" rows="4"
+                                    class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">{{ SiteContent::getValue('hero.description', 'I provide strategic counsel...') }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Floating Quote</label>
+                                <input type="text" name="content[hero.floating.quote]"
+                                    value="{{ SiteContent::getValue('hero.floating.quote', 'Excellence is not an act, but a habit.') }}"
+                                    class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Hero Portrait</label>
+                            <!-- Using explicit key 'home_hero_image' which aligns with controller fallback if needed, but preferable key is structured -->
+                            <div class="w-full h-80 bg-slate-100 rounded-xl overflow-hidden relative group mb-4">
+                                <img src="{{ asset(SiteContent::getValue('hero.image', 'assets/images/brian.jpeg')) }}"
+                                    class="w-full h-full object-cover" id="preview-hero">
+                            </div>
+                            <input type="file" name="images[hero.image]" class="block w-full text-sm text-slate-500"
+                                onchange="previewImage(this, 'preview-hero')">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Home About -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">About Preview Section</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Section Title</label>
                             <input type="text" name="content[home.about.title]"
-                                value="{{ $content['home.about.title']->value ?? 'About Brian' }}"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg">
+                                value="{{ SiteContent::getValue('home.about.title', 'About Brian') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
                         </div>
-
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Subtitle</label>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Subtitle</label>
                             <input type="text" name="content[home.about.subtitle]"
-                                value="{{ $content['home.about.subtitle']->value ?? 'Since 2020' }}"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg">
+                                value="{{ SiteContent::getValue('home.about.subtitle', 'Since 2020') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
                         </div>
-
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Quote</label>
-                            <textarea name="content[home.about.quote]" rows="3"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg">{{ $content['home.about.quote']->value ?? 'I believe that effective legal representation goes beyond merely knowing the law; it requires understanding the unique human and business dynamics behind every case.' }}</textarea>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Highlights Quote</label>
+                            <textarea name="content[home.about.quote]" rows="2"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl italic font-serif">{{ SiteContent::getValue('home.about.quote', 'I believe...') }}</textarea>
                         </div>
-
-                        <div class="grid md:grid-cols-2 gap-6">
+                        <div class="grid md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Paragraph 1</label>
-                                <textarea name="content[home.about.p1]" rows="4"
-                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg summernote">{{ $content['home.about.p1']->value ?? 'With 4 years of experience practicing at the High Court, I have built a reputation for meticulous preparation and strategic advocacy. My approach is client-centric, ensuring that you are not just represented, but truly heard and understood.' }}</textarea>
+                                <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Paragraph 1</label>
+                                <textarea name="content[home.about.p1]" rows="5"
+                                    class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">{{ SiteContent::getValue('home.about.p1', '') }}</textarea>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Paragraph 2</label>
-                                <textarea name="content[home.about.p2]" rows="4"
-                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg summernote">{{ $content['home.about.p2']->value ?? 'Whether navigating complex corporate disputes or sensitive family matters, my commitment remains the same: to provide ethical, aggressive, and effective counsel that secures your future.' }}</textarea>
+                                <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Paragraph 2</label>
+                                <textarea name="content[home.about.p2]" rows="5"
+                                    class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">{{ SiteContent::getValue('home.about.p2', '') }}</textarea>
                             </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Signature Image</label>
-                            <input type="file" name="signature_image" accept="image/*"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg">
-                            <p class="mt-1 text-xs text-slate-500">Upload your signature image (Leave empty to keep current)
-                            </p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Quote Section -->
-                <div class="border-b border-slate-200 pb-8">
-                    <h3 class="text-xl font-bold text-slate-900 mb-6">Featured Quote Section</h3>
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Dark Quote Section</h3>
+                    <textarea name="content[quote.main]" rows="3"
+                        class="w-full p-3 bg-slate-900 text-white rounded-xl font-serif text-lg">{{ SiteContent::getValue('quote.main', 'I don\'t just win cases; I secure futures...') }}</textarea>
+                </div>
 
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Main Quote</label>
-                        <textarea name="content[quote.main]" rows="3"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-lg">{{ $content['quote.main']->value ?? 'I don\'t just win cases; I secure futures. Your success is my singular mission.' }}</textarea>
+                <!-- 4. Experience Section -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-serif font-bold text-slate-900">Experience List</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-bold uppercase">Section
+                                4</span>
+                            <button type="button" onclick="addItem('experience')"
+                                class="px-3 py-1 bg-slate-900 text-white text-xs rounded hover:bg-slate-700">+ Add
+                                Job</button>
+                        </div>
+                    </div>
+
+                    <div id="experience-container" class="space-y-4">
+                        @php
+                            $experiences = SiteContent::getValue('home.experience', [
+                                ['period' => '2023 - Present', 'title' => 'Senior Associate', 'company' => 'Firm A', 'desc' => '...']
+                            ]);
+                           @endphp
+                        @foreach($experiences as $index => $item)
+                            <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group item-row">
+                                <button type="button" onclick="this.parentElement.remove()"
+                                    class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold">&times;</button>
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <input type="text" name="content[home.experience][{{$index}}][period]"
+                                        value="{{ $item['period'] ?? '' }}" placeholder="Period (e.g. 2023-Present)"
+                                        class="p-2 border rounded">
+                                    <input type="text" name="content[home.experience][{{$index}}][title]"
+                                        value="{{ $item['title'] ?? '' }}" placeholder="Job Title" class="p-2 border rounded">
+                                    <input type="text" name="content[home.experience][{{$index}}][company]"
+                                        value="{{ $item['company'] ?? '' }}" placeholder="Company" class="p-2 border rounded">
+                                    <textarea name="content[home.experience][{{$index}}][desc]" rows="2"
+                                        placeholder="Description"
+                                        class="md:col-span-3 p-2 border rounded">{{ $item['desc'] ?? '' }}</textarea>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
 
-                <!-- Experience Section -->
-                <div class="border-b border-slate-200 pb-8">
-                    <h3 class="text-xl font-bold text-slate-900 mb-6">Experience Section</h3>
-
-                    <div id="experience-list" class="space-y-6">
-                        <!-- Rendered by JS -->
+                <!-- 5. Education Section -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-serif font-bold text-slate-900">Education List</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-bold uppercase">Section
+                                5</span>
+                            <button type="button" onclick="addItem('education')"
+                                class="px-3 py-1 bg-slate-900 text-white text-xs rounded hover:bg-slate-700">+ Add
+                                School</button>
+                        </div>
                     </div>
 
-                    <button type="button" onclick="addExperience()"
-                        class="mt-4 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 font-bold text-sm transition-colors flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Position
-                    </button>
-
-                    <!-- Hidden Input for Storage -->
-                    <input type="hidden" name="content[home.experience]" id="experienceInput">
-                </div>
-
-
-
-                <!-- Education Section -->
-                <div class="border-b border-slate-200 pb-8">
-                    <h3 class="text-xl font-bold text-slate-900 mb-6">Education Section</h3>
-
-                    <div id="education-list" class="space-y-6">
-                        <!-- Rendered by JS -->
+                    <div id="education-container" class="space-y-4">
+                        @php
+                            $education = SiteContent::getValue('home.education', [
+                                ['year' => '2021', 'degree' => 'PG Dip', 'institution' => 'KSL', 'desc' => '...']
+                            ]);
+                           @endphp
+                        @foreach($education as $index => $item)
+                            <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group item-row">
+                                <button type="button" onclick="this.parentElement.remove()"
+                                    class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold">&times;</button>
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <input type="text" name="content[home.education][{{$index}}][year]"
+                                        value="{{ $item['year'] ?? '' }}" placeholder="Year" class="p-2 border rounded">
+                                    <input type="text" name="content[home.education][{{$index}}][degree]"
+                                        value="{{ $item['degree'] ?? '' }}" placeholder="Degree" class="p-2 border rounded">
+                                    <input type="text" name="content[home.education][{{$index}}][institution]"
+                                        value="{{ $item['institution'] ?? '' }}" placeholder="Institution"
+                                        class="p-2 border rounded">
+                                    <textarea name="content[home.education][{{$index}}][desc]" rows="2"
+                                        placeholder="Description"
+                                        class="md:col-span-3 p-2 border rounded">{{ $item['desc'] ?? '' }}</textarea>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-
-                    <button type="button" onclick="addEducation()"
-                        class="mt-4 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 font-bold text-sm transition-colors flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Education
-                    </button>
-
-                    <input type="hidden" name="content[home.education]" id="educationInput">
                 </div>
 
-
-
-                <!-- Achievements Section -->
-                <div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-6">Achievements Section</h3>
-
-                    <div id="achievements-list" class="grid md:grid-cols-2 gap-6 mb-6">
-                        <!-- Rendered by JS -->
+                <!-- 6. Practice Areas Repeater (Renamed comment for clarity) -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-serif font-bold text-slate-900">Practice Areas</h3>
+                        <button type="button" onclick="addItem('practice-areas')"
+                            class="px-3 py-1 bg-slate-900 text-white text-xs rounded hover:bg-slate-700">+ Add Area</button>
                     </div>
-
-                    <button type="button" onclick="addAchievement()"
-                        class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 font-bold text-sm transition-colors flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Achievement
-                    </button>
-
-                    <input type="hidden" name="content[home.achievements]" id="achievementsInput">
+                    <div id="practice-areas-container" class="grid md:grid-cols-2 gap-4">
+                        @php
+                            $practiceAreas = SiteContent::getValue('home.practice_areas', []);
+                        @endphp
+                        @foreach($practiceAreas as $index => $item)
+                            <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group item-row">
+                                <button type="button" onclick="this.parentElement.remove()"
+                                    class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold">&times;</button>
+                                <div class="grid gap-2">
+                                    <input type="text" name="content[home.practice_areas][{{$index}}][title]"
+                                        value="{{ $item['title'] ?? '' }}" placeholder="Area Title"
+                                        class="p-2 border rounded font-bold">
+                                    <select name="content[home.practice_areas][{{$index}}][icon]" class="p-2 border rounded">
+                                        <option value="Building" {{ ($item['icon'] ?? '') == 'Building' ? 'selected' : '' }}>
+                                            Building (Corporate)</option>
+                                        <option value="Gavel" {{ ($item['icon'] ?? '') == 'Gavel' ? 'selected' : '' }}>Gavel
+                                            (Litigation)</option>
+                                        <option value="Users" {{ ($item['icon'] ?? '') == 'Users' ? 'selected' : '' }}>Users
+                                            (Family)</option>
+                                        <option value="Scale" {{ ($item['icon'] ?? '') == 'Scale' ? 'selected' : '' }}>Scale
+                                            (Justice)</option>
+                                        <option value="Briefcase" {{ ($item['icon'] ?? '') == 'Briefcase' ? 'selected' : '' }}>
+                                            Briefcase</option>
+                                        <option value="FileText" {{ ($item['icon'] ?? '') == 'FileText' ? 'selected' : '' }}>
+                                            File/Contract</option>
+                                        <option value="Shield" {{ ($item['icon'] ?? '') == 'Shield' ? 'selected' : '' }}>Shield
+                                        </option>
+                                    </select>
+                                    <textarea name="content[home.practice_areas][{{$index}}][desc]" rows="2"
+                                        placeholder="Description"
+                                        class="p-2 border rounded text-sm">{{ $item['desc'] ?? '' }}</textarea>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                <!-- 7. Latest Updates Section (Headings Only) -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-serif font-bold text-slate-900">Latest Updates Headers</h3>
+                        <span class="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-bold uppercase">Section
+                            7</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4">The actual blog posts are managed in the "Blog/Insights" section.
+                        These are just the section titles.</p>
+                    <div class="grid gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Section Title</label>
+                            <input type="text" name="content[home.updates.title]"
+                                value="{{ SiteContent::getValue('home.updates.title', 'Latest Updates') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Subtitle</label>
+                            <input type="text" name="content[home.updates.subtitle]"
+                                value="{{ SiteContent::getValue('home.updates.subtitle', 'Insights & Perspectives') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
+                    </div>
                 </div>
 
+                <!-- 8. Achievements Section -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-serif font-bold text-slate-900">Achievements (Stats)</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-bold uppercase">Section
+                                8</span>
+                            <button type="button" onclick="addItem('achievements')"
+                                class="px-3 py-1 bg-slate-900 text-white text-xs rounded hover:bg-slate-700">+ Add
+                                Stat</button>
+                        </div>
+                    </div>
+                    <div class="mb-6 grid gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Section Title</label>
+                            <input type="text" name="content[home.achievements.title]"
+                                value="{{ SiteContent::getValue('home.achievements.title', 'Achievements') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Subtitle</label>
+                            <input type="text" name="content[home.achievements.subtitle]"
+                                value="{{ SiteContent::getValue('home.achievements.subtitle', 'Recognition & Awards') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
+                    </div>
+                    <div id="achievements-container" class="grid md:grid-cols-2 gap-4">
+                        @php
+                            $achievements = SiteContent::getValue('home.achievements', []);
+                           @endphp
+                        @foreach($achievements as $index => $item)
+                            <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group item-row">
+                                <button type="button" onclick="this.parentElement.remove()"
+                                    class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold">&times;</button>
+                                <div class="grid gap-2">
+                                    <input type="text" name="content[home.achievements][{{$index}}][number]"
+                                        value="{{ $item['number'] ?? '' }}" placeholder="Number (e.g. 2023-Present)"
+                                        class="p-2 border rounded font-bold">
+                                    <input type="text" name="content[home.achievements][{{$index}}][title]"
+                                        value="{{ $item['title'] ?? '' }}" placeholder="Title" class="p-2 border rounded">
+                                    <input type="text" name="content[home.achievements][{{$index}}][desc]"
+                                        value="{{ $item['desc'] ?? '' }}" placeholder="Subtitle/Desc"
+                                        class="p-2 border rounded text-sm">
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
 
-                <!-- Practice Areas Section -->
-                <div class="border-t border-slate-200 pt-8 mb-8">
-                    <h3 class="text-xl font-bold text-slate-900 mb-6">Practice Areas (Services)</h3>
-                    <p class="text-sm text-slate-600 mb-4">Manage the services displayed in the "Areas of Practice" section.
+                <!-- 9. Contact Section Intro -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Contact Section Intro</h3>
+                    <div class="flex items-center gap-2 mb-4">
+                        <span
+                            class="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-bold uppercase block">Section
+                            9</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4">This controls the text above the contact form on the home page.
                     </p>
-
-                    <div id="practice-areas-list" class="space-y-4 mb-6">
-                        <!-- Rendered by JS -->
-                    </div>
-
-                    <button type="button" onclick="addPracticeArea()"
-                        class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 font-bold text-sm transition-colors flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Service
-                    </button>
-
-                    <input type="hidden" name="content[home.practice_areas]" id="practiceAreasInput">
-                </div>
-
-
-                <!-- Social Media Links Section -->
-                <div class="border-t border-slate-200 pt-8">
-                    <h3 class="text-xl font-bold text-slate-900 mb-6">Social Media Links (Footer)</h3>
-                    <p class="text-sm text-slate-600 mb-4">Manage social media platform links displayed in the footer.</p>
-
-                    <div id="social-media-list" class="space-y-4 mb-6">
-                        <!-- Rendered by JS -->
-                    </div>
-
-                    <button type="button" onclick="addSocialMedia()"
-                        class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 font-bold text-sm transition-colors flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Social Platform
-                    </button>
-
-                    <input type="hidden" name="content[footer.social_media]" id="socialMediaInput">
-                </div>
-
-            </div>
-
-            <!-- About Page Tab -->
-            <div id="about-tab" class="tab-content hidden space-y-6">
-                <h3 class="text-xl font-bold text-slate-900 mb-6">About Page Content</h3>
-
-                <div class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Page Title</label>
-                        <input type="text" name="content[about.page.title]"
-                            value="{{ $content['about.page.title']->value ?? 'About Brian Adero' }}"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-lg">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Page Subtitle</label>
-                        <textarea name="content[about.page.subtitle]" rows="2"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-lg">{{ $content['about.page.subtitle']->value ?? 'A steadfast commitment to legal excellence, integrity, and the pursuit of justice for every client.' }}</textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Section Title</label>
-                        <input type="text" name="content[about.section.title]"
-                            value="{{ $content['about.section.title']->value ?? 'Dedicated to Your Legal Success' }}"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-lg">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Full Biography</label>
-                        <textarea name="content[about.page.bio]" rows="10"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-lg summernote">{{ $content['about.page.bio']->value ?? '' }}</textarea>
-                        <p class="mt-1 text-xs text-slate-500">Use double line breaks for new paragraphs.</p>
-                    </div>
-
-                    <div class="grid md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-lg">
-                        <div class="md:col-span-2 font-bold text-slate-900">Value 1</div>
+                    <div class="grid gap-4">
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Title</label>
-                            <input type="text" name="content[about.value1.title]"
-                                value="{{ $content['about.value1.title']->value ?? 'Integrity' }}"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Section Title</label>
+                            <input type="text" name="content[home.contact.title]"
+                                value="{{ SiteContent::getValue('home.contact.title', 'Get in Touch') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Description</label>
-                            <input type="text" name="content[about.value1.desc]"
-                                value="{{ $content['about.value1.desc']->value ?? 'Upholding the highest ethical standards in every case.' }}"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Intro Text</label>
+                            <textarea name="content[home.contact.text]" rows="3"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">{{ SiteContent::getValue('home.contact.text', 'Whether you have a question about a case, need legal advice, or want to book a consultation, I\'m here to help.') }}</textarea>
                         </div>
-                    </div>
-
-                    <div class="grid md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-lg">
-                        <div class="md:col-span-2 font-bold text-slate-900">Value 2</div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Title</label>
-                            <input type="text" name="content[about.value2.title]"
-                                value="{{ $content['about.value2.title']->value ?? 'Excellence' }}"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Description</label>
-                            <input type="text" name="content[about.value2.desc]"
-                                value="{{ $content['about.value2.desc']->value ?? 'Pursuing superior outcomes through diligent preparation.' }}"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
-                        </div>
-                    </div>
-
-                    <div class="p-6 bg-slate-50 rounded-lg">
-                        <h4 class="font-bold text-slate-900 mb-4">Call to Action Section</h4>
-                        <div class="grid gap-4">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">CTA Title</label>
-                                <input type="text" name="content[about.cta.title]"
-                                    value="{{ $content['about.cta.title']->value ?? 'Ready to Discuss Your Case?' }}"
-                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">CTA Text</label>
-                                <textarea name="content[about.cta.text]" rows="2"
-                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">{{ $content['about.cta.text']->value ?? 'Schedule a consultation today and let me provide the legal guidance you need.' }}</textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">About Page Portrait Image</label>
-                        <input type="file" name="about_portrait" accept="image/*"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-lg">
-                        <p class="mt-1 text-xs text-slate-500">Upload portrait image for about page</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Contact Page Tab -->
-            <div id="contact-tab" class="tab-content space-y-6 hidden">
-                <h3 class="text-xl font-bold text-slate-900 mb-6">Contact Page Information</h3>
+            <!-- ABOUT TAB -->
+            <div id="tab-about" class="tab-content hidden space-y-8">
+                <!-- 1. Header Section -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Header Section</h3>
+                    <div class="grid gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Page Title</label>
+                            <input type="text" name="content[about.page.title]"
+                                value="{{ SiteContent::getValue('about.page.title', 'About Brian Adero') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Subtitle / Intro</label>
+                            <textarea name="content[about.page.subtitle]" rows="2"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">{{ SiteContent::getValue('about.page.subtitle', 'A steadfast commitment...') }}</textarea>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="md:col-span-2 p-6 bg-slate-50 rounded-lg mb-4">
-                        <h4 class="font-bold text-slate-900 mb-4">Hero Section</h4>
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Subtitle</label>
-                                <input type="text" name="content[contact.hero.subtitle]"
-                                    value="{{ $content['contact.hero.subtitle']->value ?? 'Get In Touch' }}"
-                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Main Title</label>
-                                <input type="text" name="content[contact.hero.title]"
-                                    value="{{ $content['contact.hero.title']->value ?? 'Contact Me' }}"
-                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
-                            </div>
+                <!-- 2. Main Content Section -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Main Content (Bio)</h3>
+                    <div class="grid gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Section Title</label>
+                            <input type="text" name="content[about.section.title]"
+                                value="{{ SiteContent::getValue('about.section.title', 'Dedicated to Your Legal Success') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-6">
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Description</label>
-                                <input type="text" name="content[contact.hero.desc]"
-                                    value="{{ $content['contact.hero.desc']->value ?? 'Reach out for legal consultations, inquiries, or representation.' }}"
-                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
+                                <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Full Bio (HTML
+                                    Allowed)</label>
+                                <textarea name="content[about.page.bio]" rows="12"
+                                    class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl font-serif leading-relaxed">{{ SiteContent::getValue('about.page.bio', 'Brian Adero is an Advocate...') }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Portrait Image
+                                    (Vertical)</label>
+                                <div class="w-full h-64 bg-slate-100 rounded-xl overflow-hidden relative group mb-4">
+                                    <img src="{{ asset(SiteContent::getValue('about.portrait', 'assets/images/about-portrait.jpeg')) }}"
+                                        onerror="this.src='{{ asset('assets/images/brian.jpeg') }}'"
+                                        class="w-full h-full object-cover" id="preview-about-portrait">
+                                </div>
+                                <input type="file" name="images[about.portrait]" class="block w-full text-sm text-slate-500"
+                                    onchange="previewImage(this, 'preview-about-portrait')">
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="md:col-span-2 p-6 bg-slate-50 rounded-lg mb-4">
-                        <h4 class="font-bold text-slate-900 mb-4">Office Information Section</h4>
-                        <div class="grid gap-4">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Section Title</label>
-                                <input type="text" name="content[contact.office.title]"
-                                    value="{{ $content['contact.office.title']->value ?? 'Office Info' }}"
-                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
+                <!-- 3. Core Values -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Core Values</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="p-4 border border-slate-100 rounded-xl">
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Value 1 Title</label>
+                            <input type="text" name="content[about.value1.title]"
+                                value="{{ SiteContent::getValue('about.value1.title', 'Integrity') }}"
+                                class="w-full p-2 bg-slate-50 border border-slate-100 rounded">
+                            <label class="block text-xs font-bold uppercase text-slate-400 mt-2 mb-2">Value 1 Desc</label>
+                            <textarea name="content[about.value1.desc]" rows="2"
+                                class="w-full p-2 bg-slate-50 border border-slate-100 rounded">{{ SiteContent::getValue('about.value1.desc', 'Upholding the highest ethical standards...') }}</textarea>
+                        </div>
+                        <div class="p-4 border border-slate-100 rounded-xl">
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Value 2 Title</label>
+                            <input type="text" name="content[about.value2.title]"
+                                value="{{ SiteContent::getValue('about.value2.title', 'Excellence') }}"
+                                class="w-full p-2 bg-slate-50 border border-slate-100 rounded">
+                            <label class="block text-xs font-bold uppercase text-slate-400 mt-2 mb-2">Value 2 Desc</label>
+                            <textarea name="content[about.value2.desc]" rows="2"
+                                class="w-full p-2 bg-slate-50 border border-slate-100 rounded">{{ SiteContent::getValue('about.value2.desc', 'Pursuing superior outcomes...') }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Philosophy & Approach -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-serif font-bold text-slate-900">Philosophy & Approach</h3>
+                        <button type="button" onclick="addItem('philosophy')"
+                            class="px-3 py-1 bg-slate-900 text-white text-xs rounded hover:bg-slate-700">+ Add Item</button>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Section Title</label>
+                        <input type="text" name="content[about.philosophy.title]"
+                            value="{{ SiteContent::getValue('about.philosophy.title', 'Philosophy & Approach') }}"
+                            class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                    </div>
+
+                    <div id="philosophy-container" class="grid md:grid-cols-3 gap-4">
+                        @php
+                            $philosophyDefaults = [
+                                ['title' => 'Client-First Mentality', 'desc' => 'Every legal strategy is tailored...', 'icon' => 'users'],
+                            ];
+                            $philosophyItems = SiteContent::getValue('about.philosophy.items', $philosophyDefaults);
+                            if (is_string($philosophyItems)) {
+                                $philosophyItems = json_decode($philosophyItems, true) ?? [];
+                            }
+
+                            $adminIcons = [
+                                'users' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
+                                'search' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                                'target' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>',
+                                'scale' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>',
+                                'gavel' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 12.5-8 8a2.119 2.119 0 1 1-3-3l8-8"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/></svg>',
+                                'briefcase' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+                                'shield' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>',
+                                'lightbulb' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5a6 6 0 0 0-11.43-1.428C5.99 7.382 6 7.691 6 8a4.844 4.844 0 0 0 .733 2.665C7.262 11.536 7.79 12.188 8 13c.2.828.2 1.83 0 3v0a2 2 0 0 0 1.084 2.824c.761.274 1.59.436 2.458.436h.917c.868 0 1.697-.162 2.458-.436A2 2 0 0 0 16 16v0c-.2-1.17-.2-2.172 0-3Z"/><path d="M12 21h0"/></svg>'
+                            ];
+                        @endphp
+                        @foreach($philosophyItems as $index => $item)
+                            <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group item-row">
+                                <button type="button" onclick="this.parentElement.remove()"
+                                    class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold">&times;</button>
+                                <div class="grid gap-2">
+                                    <label class="text-[10px] font-bold uppercase text-slate-400">Icon</label>
+
+                                    <!-- Fallback for legacy SVG data checks -->
+                                    @if(str_starts_with($item['icon'] ?? '', '<svg'))
+                                        <div class="text-xs text-amber-600 bg-amber-50 p-2 rounded mb-2">Legacy SVG detected. Select
+                                            a new icon below to update.</div>
+                                        <input type="hidden" name="content[about.philosophy.items][{{$index}}][icon]"
+                                            value="{{ $item['icon'] }}">
+                                    @endif
+
+                                    <div class="flex flex-wrap gap-2">
+                                        @foreach($adminIcons as $key => $svg)
+                                            <label class="cursor-pointer">
+                                                <input type="radio" name="content[about.philosophy.items][{{$index}}][icon]"
+                                                    value="{{ $key }}" class="peer hidden" {{ ($item['icon'] ?? '') == $key ? 'checked' : '' }}>
+                                                <div
+                                                    class="p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-colors text-slate-500">
+                                                    {!! $svg !!}
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+
+                                    <label class="text-[10px] font-bold uppercase text-slate-400">Title</label>
+                                    <input type="text" name="content[about.philosophy.items][{{$index}}][title]"
+                                        value="{{ $item['title'] ?? '' }}" class="p-2 border rounded font-bold">
+
+                                    <label class="text-[10px] font-bold uppercase text-slate-400">Description</label>
+                                    <textarea name="content[about.philosophy.items][{{$index}}][desc]" rows="3"
+                                        class="p-2 border rounded text-sm">{{ $item['desc'] ?? '' }}</textarea>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Section Description</label>
-                                <textarea name="content[contact.office.desc]" rows="2"
-                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white summernote">{{ $content['contact.office.desc']->value ?? 'My office is open Monday through Friday, from 8:00 AM to 5:00 PM. I am available for consultations by appointment.' }}</textarea>
-                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- 5. Professional Highlights -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Professional Highlights</h3>
+
+                    <div class="mb-6 grid gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Section Title</label>
+                            <input type="text" name="content[about.highlights.title]"
+                                value="{{ SiteContent::getValue('about.highlights.title', 'Professional Highlights') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Description</label>
+                            <textarea name="content[about.highlights.desc]" rows="2"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">{{ SiteContent::getValue('about.highlights.desc', 'Throughout my years...') }}</textarea>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Phone Number</label>
-                        <input type="text" name="content[contact.phone]"
-                            value="{{ $content['contact.phone']->value ?? '+254 721 485 244' }}"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-lg">
-                    </div>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- List Items -->
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="font-bold text-sm text-slate-700">Bullet Points</h4>
+                                <button type="button" onclick="addItem('highlightItem')"
+                                    class="px-2 py-1 bg-slate-200 text-slate-700 text-xs rounded hover:bg-slate-300">+ Add
+                                    Point</button>
+                            </div>
+                            <div id="highlightItem-container" class="space-y-2">
+                                @php
+                                    $highlightsDefaults = ['Over 50+ successful litigation outcomes', 'Expertise in Corporate & Commercial Arbitration', 'Dedicated Pro-Bono legal service contributor'];
+                                    $highlightsItems = SiteContent::getValue('about.highlights.items', $highlightsDefaults);
+                                    if (is_string($highlightsItems)) {
+                                        $highlightsItems = json_decode($highlightsItems, true) ?? [];
+                                    }
+                                @endphp
+                                @foreach($highlightsItems as $index => $item)
+                                    <div class="flex items-center gap-2 item-row">
+                                        <input type="text" name="content[about.highlights.items][]" value="{{ $item }}"
+                                            class="flex-1 p-2 border rounded text-sm">
+                                        <button type="button" onclick="this.parentElement.remove()"
+                                            class="text-red-400 hover:text-red-600 font-bold">&times;</button>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
 
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
-                        <input type="email" name="content[contact.email]"
-                            value="{{ $content['contact.email']->value ?? 'omongeadero@gmail.com' }}"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-lg">
+                        <!-- Stats Grid -->
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="font-bold text-sm text-slate-700">Stats Grid</h4>
+                                <button type="button" onclick="addItem('aboutStat')"
+                                    class="px-2 py-1 bg-slate-200 text-slate-700 text-xs rounded hover:bg-slate-300">+ Add
+                                    Stat</button>
+                            </div>
+                            <div id="aboutStat-container" class="space-y-2">
+                                @php
+                                    $statsDefaults = [
+                                        ['number' => '4+', 'label' => 'Years Practice'],
+                                        ['number' => '100%', 'label' => 'Dedication']
+                                    ];
+                                    $statsItems = SiteContent::getValue('about.stats.items', $statsDefaults);
+                                    if (is_string($statsItems)) {
+                                        $statsItems = json_decode($statsItems, true) ?? [];
+                                    }
+                                @endphp
+                                @foreach($statsItems as $index => $item)
+                                    <div
+                                        class="flex items-center gap-2 item-row bg-slate-50 p-2 rounded border border-slate-100">
+                                        <input type="text" name="content[about.stats.items][{{$index}}][number]"
+                                            value="{{ $item['number'] ?? '' }}" placeholder="4+"
+                                            class="w-20 p-1 border rounded text-sm text-center font-bold">
+                                        <input type="text" name="content[about.stats.items][{{$index}}][label]"
+                                            value="{{ $item['label'] ?? '' }}" placeholder="Years Practice"
+                                            class="flex-1 p-1 border rounded text-sm">
+                                        <button type="button" onclick="this.parentElement.remove()"
+                                            class="text-red-400 hover:text-red-600 font-bold px-2">&times;</button>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Appointment Booking URL</label>
-                        <input type="url" name="content[general.booking_url]"
-                            value="{{ $content['general.booking_url']->value ?? '' }}"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-lg block"
-                            placeholder="https://calendly.com/your-link">
-                        <p class="mt-1 text-xs text-slate-500">Enter a booking link (e.g. Calendly). If set, a "Book
-                            Consultation" button will appear in the website header.</p>
+                <!-- 6. Call to Action -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Call to Action</h3>
+                    <div class="grid gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Section Title</label>
+                            <input type="text" name="content[about.cta.title]"
+                                value="{{ SiteContent::getValue('about.cta.title', 'Ready to Discuss Your Case?') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Button Text / Intro</label>
+                            <textarea name="content[about.cta.text]" rows="2"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">{{ SiteContent::getValue('about.cta.text', 'Schedule a consultation...') }}</textarea>
+                        </div>
                     </div>
+                </div>
 
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Location</label>
-                        <input type="text" name="content[contact.location]"
-                            value="{{ $content['contact.location']->value ?? 'Nairobi, Kenya' }}"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-lg">
+            </div>
+
+            <!-- Resume Tab Removed (Merged into Home) -->
+
+
+            <!-- CONTACT TAB -->
+            <div id="tab-contact" class="tab-content hidden space-y-8">
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Contact Information</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Email Address</label>
+                            <input type="email" name="content[contact.email]"
+                                value="{{ SiteContent::getValue('contact.email', 'admin@aderobrian.com') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Phone Number</label>
+                            <input type="text" name="content[contact.phone]"
+                                value="{{ SiteContent::getValue('contact.phone', '+254 700 000 000') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Physical Address</label>
+                            <textarea name="content[contact.location]" rows="3"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">{{ SiteContent::getValue('contact.location', 'Nairobi, Kenya') }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Google Maps Embed
+                                URL</label>
+                            <textarea name="content[contact.map_url]" rows="3"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-mono text-xs">{{ SiteContent::getValue('contact.map_url', '') }}</textarea>
+                        </div>
                     </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Office Hours</label>
-                        <input type="text" name="content[contact.hours]"
-                            value="{{ $content['contact.hours']->value ?? 'Monday - Friday, 8:00 AM - 5:00 PM' }}"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-lg">
+                </div>
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Social Media Links</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">LinkedIn URL</label>
+                            <input type="url" name="content[social.linkedin]"
+                                value="{{ SiteContent::getValue('social.linkedin', 'https://ke.linkedin.com/in/omonge-adero-627739142') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Facebook URL</label>
+                            <input type="url" name="content[social.facebook]"
+                                value="{{ SiteContent::getValue('social.facebook', 'https://web.facebook.com/brian.adero.1/?_rdc=1&_rdr#') }}"
+                                class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Testimonials Tab -->
-            <div id="testimonials-tab" class="tab-content space-y-8 hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-900">Client Reviews</h3>
-                        <p class="text-sm text-slate-500">Manage client testimonials displayed on the homepage.</p>
-                    </div>
-                    <button type="button" onclick="addTestimonial()"
-                        class="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Review
-                    </button>
+            <!-- LEGAL TAB -->
+            <div id="tab-legal" class="tab-content hidden space-y-8">
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Privacy Policy</h3>
+                    <textarea name="content[legal.privacy]" rows="10"
+                        class="rich-text-editor w-full p-4 bg-slate-50 border border-slate-100 rounded-xl">{{ SiteContent::getValue('legal.privacy', '') }}</textarea>
                 </div>
-
-                <div id="testimonials-list" class="grid md:grid-cols-2 gap-6">
-                    <!-- Dynamic Testimonials will be rendered here -->
+                <div class="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-6">Terms of Service</h3>
+                    <textarea name="content[legal.terms]" rows="10"
+                        class="rich-text-editor w-full p-4 bg-slate-50 border border-slate-100 rounded-xl">{{ SiteContent::getValue('legal.terms', '') }}</textarea>
                 </div>
-
-                <input type="hidden" name="content[home.testimonials]" id="testimonialsInput">
             </div>
 
-            <!-- Legal Pages Tab -->
-    <div id="legal-tab" class="tab-content space-y-8 hidden">
-        <h3 class="text-xl font-bold text-slate-900 mb-6">Legal Pages Content</h3>
-        <p class="text-sm text-slate-600 mb-4">Manage content for Privacy Policy and Terms of Service pages.</p>
-
-        <!-- Privacy Policy -->
-        <div class="p-6 bg-slate-50 rounded-lg">
-            <h4 class="font-bold text-slate-900 mb-4">Privacy Policy</h4>
-            <textarea name="content[legal.privacy]" rows="10"
-                class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white summernote">{{ $content['legal.privacy']->value ?? '' }}</textarea>
-        </div>
-
-        <!-- Terms of Service -->
-        <div class="p-6 bg-slate-50 rounded-lg">
-            <h4 class="font-bold text-slate-900 mb-4">Terms of Service</h4>
-            <textarea name="content[legal.terms]" rows="10"
-                class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white summernote">{{ $content['legal.terms']->value ?? '' }}</textarea>
-        </div>
+        </form>
     </div>
 
-    <input type="hidden" name="page" value="all">
-
-    <!-- Save Button -->
-    <div class="flex items-center justify-between pt-8 border-t border-slate-200 mt-8">
-        <div class="text-sm text-slate-600">
-            <svg class="w-5 h-5 inline-block mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Changes save immediately to your website
+    <!-- Templates for Repeaters -->
+    <template id="tpl-practice-areas">
+        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group item-row">
+            <button type="button" onclick="this.parentElement.remove()"
+                class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold">&times;</button>
+            <div class="grid gap-2">
+                <input type="text" name="content[home.practice_areas][INDEX][title]" placeholder="Area Title"
+                    class="p-2 border rounded font-bold">
+                <select name="content[home.practice_areas][INDEX][icon]" class="p-2 border rounded">
+                    <option value="Building">Building (Corporate)</option>
+                    <option value="Gavel">Gavel (Litigation)</option>
+                    <option value="Users">Users (Family)</option>
+                    <option value="Scale">Scale (Justice)</option>
+                    <option value="Briefcase">Briefcase</option>
+                    <option value="FileText">File/Contract</option>
+                    <option value="Shield">Shield</option>
+                </select>
+                <textarea name="content[home.practice_areas][INDEX][desc]" rows="2" placeholder="Description"
+                    class="p-2 border rounded text-sm"></textarea>
+            </div>
         </div>
-        <button type="submit"
-            class="px-8 py-4 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl font-bold tracking-wide flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            Save All Changes
-        </button>
-    </div>
-    </form>
-    </div>
+    </template>
+    <template id="tpl-experience">
+        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group item-row">
+            <button type="button" onclick="this.parentElement.remove()"
+                class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold">&times;</button>
+            <div class="grid md:grid-cols-3 gap-4">
+                <input type="text" name="content[home.experience][INDEX][period]" placeholder="Period (e.g. 2023-Present)"
+                    class="p-2 border rounded">
+                <input type="text" name="content[home.experience][INDEX][title]" placeholder="Job Title"
+                    class="p-2 border rounded">
+                <input type="text" name="content[home.experience][INDEX][company]" placeholder="Company"
+                    class="p-2 border rounded">
+                <textarea name="content[home.experience][INDEX][desc]" rows="2" placeholder="Description"
+                    class="md:col-span-3 p-2 border rounded"></textarea>
+            </div>
+        </div>
+    </template>
 
-    <script>
-        console.log('Admin Content Scripts Loading...');
+    <template id="tpl-education">
+        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group item-row">
+            <button type="button" onclick="this.parentElement.remove()"
+                class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold">&times;</button>
+            <div class="grid md:grid-cols-3 gap-4">
+                <input type="text" name="content[home.education][INDEX][year]" placeholder="Year"
+                    class="p-2 border rounded">
+                <input type="text" name="content[home.education][INDEX][degree]" placeholder="Degree"
+                    class="p-2 border rounded">
+                <input type="text" name="content[home.education][INDEX][institution]" placeholder="Institution"
+                    class="p-2 border rounded">
+                <textarea name="content[home.education][INDEX][desc]" rows="2" placeholder="Description"
+                    class="md:col-span-3 p-2 border rounded"></textarea>
+            </div>
+        </div>
+    </template>
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabName + '-tab').classList.add('active');
-            event.target.classList.add('active');
-        }
+    <template id="tpl-achievements">
+        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group item-row">
+            <button type="button" onclick="this.parentElement.remove()"
+                class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold">&times;</button>
+            <div class="grid gap-2">
+                <input type="text" name="content[home.achievements][INDEX][number]" placeholder="Number (e.g. 50+)"
+                    class="p-2 border rounded font-bold">
+                <input type="text" name="content[home.achievements][INDEX][title]" placeholder="Title"
+                    class="p-2 border rounded">
+                <input type="text" name="content[home.achievements][INDEX][desc]" placeholder="Subtitle/Desc"
+                    class="p-2 border rounded text-sm">
+            </div>
+        </div>
+    </template>
 
-        // --- Global Helper ---
-        window.safeConfirm = function (title, msg, callback) {
-            // Try using the custom modal if it exists AND is functional
-            if (typeof window.openConfirmModal === 'function') {
-                try {
-                    const modal = document.getElementById('confirmationModal');
-                    const confirmBtn = document.getElementById('confirmActionBtn');
+    <template id="tpl-philosophy">
+        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group item-row">
+            <button type="button" onclick="this.parentElement.remove()"
+                class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold">&times;</button>
+            <div class="grid gap-2">
+                <label class="text-[10px] font-bold uppercase text-slate-400">Select Icon</label>
+                <div class="flex flex-wrap gap-2">
+                    <!-- Hardcoded Icons for JS Template -->
+                    <label class="cursor-pointer"><input type="radio" name="content[about.philosophy.items][INDEX][icon]"
+                            value="users" class="peer hidden" checked>
+                        <div
+                            class="p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-colors text-slate-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg></div>
+                    </label>
+                    <label class="cursor-pointer"><input type="radio" name="content[about.philosophy.items][INDEX][icon]"
+                            value="search" class="peer hidden">
+                        <div
+                            class="p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-colors text-slate-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg></div>
+                    </label>
+                    <label class="cursor-pointer"><input type="radio" name="content[about.philosophy.items][INDEX][icon]"
+                            value="target" class="peer hidden">
+                        <div
+                            class="p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-colors text-slate-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <circle cx="12" cy="12" r="6"></circle>
+                                <circle cx="12" cy="12" r="2"></circle>
+                            </svg></div>
+                    </label>
+                    <label class="cursor-pointer"><input type="radio" name="content[about.philosophy.items][INDEX][icon]"
+                            value="scale" class="peer hidden">
+                        <div
+                            class="p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-colors text-slate-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                                <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                                <path d="M7 21h10" />
+                                <path d="M12 3v18" />
+                                <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+                            </svg></div>
+                    </label>
+                    <label class="cursor-pointer"><input type="radio" name="content[about.philosophy.items][INDEX][icon]"
+                            value="gavel" class="peer hidden">
+                        <div
+                            class="p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-colors text-slate-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m14.5 12.5-8 8a2.119 2.119 0 1 1-3-3l8-8" />
+                                <path d="m16 16 6-6" />
+                                <path d="m8 8 6-6" />
+                                <path d="m9 7 8 8" />
+                                <path d="m21 11-8-8" />
+                            </svg></div>
+                    </label>
+                    <label class="cursor-pointer"><input type="radio" name="content[about.philosophy.items][INDEX][icon]"
+                            value="briefcase" class="peer hidden">
+                        <div
+                            class="p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-colors text-slate-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="20" height="14" x="2" y="7" rx="2" ry="2" />
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                            </svg></div>
+                    </label>
+                    <label class="cursor-pointer"><input type="radio" name="content[about.philosophy.items][INDEX][icon]"
+                            value="shield" class="peer hidden">
+                        <div
+                            class="p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-colors text-slate-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                            </svg></div>
+                    </label>
+                    <label class="cursor-pointer"><input type="radio" name="content[about.philosophy.items][INDEX][icon]"
+                            value="lightbulb" class="peer hidden">
+                        <div
+                            class="p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-colors text-slate-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5a6 6 0 0 0-11.43-1.428C5.99 7.382 6 7.691 6 8a4.844 4.844 0 0 0 .733 2.665C7.262 11.536 7.79 12.188 8 13c.2.828.2 1.83 0 3v0a2 2 0 0 0 1.084 2.824c.761.274 1.59.436 2.458.436h.917c.868 0 1.697-.162 2.458-.436A2 2 0 0 0 16 16v0c-.2-1.17-.2-2.172 0-3Z" />
+                                <path d="M12 21h0" />
+                            </svg></div>
+                    </label>
+                </div>
 
-                    // Verify modal elements exist before using custom modal
-                    if (modal && confirmBtn) {
-                        window.openConfirmModal(title, msg, callback);
-                        return;
-                    }
-                } catch (e) {
-                    console.error('Custom modal failed:', e);
-                }
-            }
+                <label class="text-[10px] font-bold uppercase text-slate-400">Title</label>
+                <input type="text" name="content[about.philosophy.items][INDEX][title]"
+                    class="p-2 border rounded font-bold">
 
-            // Fallback to native confirm
-            if (window.confirm(msg || 'Are you sure?')) {
-                callback();
-            }
-        };
+                <label class="text-[10px] font-bold uppercase text-slate-400">Description</label>
+                <textarea name="content[about.philosophy.items][INDEX][desc]" rows="3"
+                    class="p-2 border rounded text-sm"></textarea>
+            </div>
+        </div>
+    </template>
 
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('DOM Ready, Initializing Data...');
+    <template id="tpl-highlightItem">
+        <div class="flex items-center gap-2 item-row">
+            <input type="text" name="content[about.highlights.items][]" class="flex-1 p-2 border rounded text-sm">
+            <button type="button" onclick="this.parentElement.remove()"
+                class="text-red-400 hover:text-red-600 font-bold">&times;</button>
+        </div>
+    </template>
 
-            // --- Experience Section ---
-            let savedExperience = @json(json_decode($content->get('home.experience')?->value ?? '[]', true));
-            const defaultExperience = [
-                { period: '2023 - Present', title: 'Senior Associate Advocate', company: 'Ochieng & Associates', desc: 'Leading the corporate litigation department, overseeing complex merger disputes and high-value commercial arbitration.' },
-                { period: '2021 - 2023', title: 'Associate Advocate', company: 'Mutuso Dhahabu & Co. Advocates', desc: 'Specialized in Family Law and Civil Litigation. Managed a verified caseload of 40+ active files.' },
-                { period: '2020 - 2021', title: 'Legal Trainee', company: 'Kenya School of Law', desc: 'Completed pupillage with distinction. Drafted pleadings and legal opinions.' }
-            ];
+    <template id="tpl-aboutStat">
+        <div class="flex items-center gap-2 item-row bg-slate-50 p-2 rounded border border-slate-100">
+            <input type="text" name="content[about.stats.items][INDEX][number]" placeholder="4+"
+                class="w-20 p-1 border rounded text-sm text-center font-bold">
+            <input type="text" name="content[about.stats.items][INDEX][label]" placeholder="Label"
+                class="flex-1 p-1 border rounded text-sm">
+            <button type="button" onclick="this.parentElement.remove()"
+                class="text-red-400 hover:text-red-600 font-bold px-2">&times;</button>
+        </div>
+    </template>
 
-            // Ensure Array
-            if (!Array.isArray(savedExperience)) savedExperience = null;
-            let experienceData = savedExperience || defaultExperience;
-
-            window.renderExperience = function () {
-                const container = document.getElementById('experience-list');
-                if (!container) return;
-                container.innerHTML = '';
-                experienceData.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className = 'p-6 bg-slate-50 rounded-lg relative group';
-                    row.innerHTML = `
-                                                                                <button type="button" onclick="removeExperience(${index})" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                                                                </button>
-                                                                                <div class="grid md:grid-cols-2 gap-4">
-                                                                                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Period</label><input type="text" value="${item.period || ''}" oninput="updateExperience(${index}, 'period', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                                                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Job Title</label><input type="text" value="${item.title || ''}" oninput="updateExperience(${index}, 'title', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                                                    <div class="md:col-span-2"><label class="block text-sm font-bold text-slate-700 mb-2">Company</label><input type="text" value="${item.company || ''}" oninput="updateExperience(${index}, 'company', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                                                    <div class="md:col-span-2"><label class="block text-sm font-bold text-slate-700 mb-2">Description</label><textarea rows="3" oninput="updateExperience(${index}, 'desc', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">${item.desc || ''}</textarea></div>
-                                                                                </div>`;
-                    container.appendChild(row);
-                });
-                document.getElementById('experienceInput').value = JSON.stringify(experienceData);
-            };
-            window.addExperience = function () { experienceData.push({ period: '', title: '', company: '', desc: '' }); renderExperience(); };
-            window.removeExperience = function (index) { safeConfirm('Remove Experience', 'Remove this experience entry?', () => { experienceData.splice(index, 1); renderExperience(); }); };
-            window.updateExperience = function (index, key, value) { experienceData[index][key] = value; document.getElementById('experienceInput').value = JSON.stringify(experienceData); };
-
-            // --- Education Section ---
-            let savedEducation = @json(json_decode($content->get('home.education')?->value ?? '[]', true));
-            const defaultEducation = [
-                { degree: 'Post Graduate Diploma', institution: 'Kenya School of Law', year: '2021', desc: 'ATP completion with honors.' },
-                { degree: 'Bachelor of Laws (LL.B)', institution: 'University of Nairobi', year: '2019', desc: 'Second Class Honors (Upper Division).' }
-            ];
-
-            if (!Array.isArray(savedEducation)) savedEducation = null;
-            let educationData = savedEducation || defaultEducation;
-
-            window.renderEducation = function () {
-                const container = document.getElementById('education-list');
-                if (!container) return;
-                container.innerHTML = '';
-                educationData.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className = 'p-6 bg-slate-50 rounded-lg relative group';
-                    row.innerHTML = `
-                                                                                <button type="button" onclick="removeEducation(${index})" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                                                                </button>
-                                                                                <div class="grid md:grid-cols-2 gap-4">
-                                                                                    <div class="md:col-span-2"><label class="block text-sm font-bold text-slate-700 mb-2">Degree/Qualification</label><input type="text" value="${item.degree || ''}" oninput="updateEducation(${index}, 'degree', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                                                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Institution</label><input type="text" value="${item.institution || ''}" oninput="updateEducation(${index}, 'institution', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                                                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Year</label><input type="text" value="${item.year || ''}" oninput="updateEducation(${index}, 'year', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                                                    <div class="md:col-span-2"><label class="block text-sm font-bold text-slate-700 mb-2">Description</label><textarea rows="2" oninput="updateEducation(${index}, 'desc', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">${item.desc || ''}</textarea></div>
-                                                                                </div>`;
-                    container.appendChild(row);
-                });
-                document.getElementById('educationInput').value = JSON.stringify(educationData);
-            };
-            window.addEducation = function () { educationData.push({ degree: '', institution: '', year: '', desc: '' }); renderEducation(); };
-            window.removeEducation = function (index) { safeConfirm('Remove Education', 'Remove this education entry?', () => { educationData.splice(index, 1); renderEducation(); }); };
-            window.updateEducation = function (index, key, value) { educationData[index][key] = value; document.getElementById('educationInput').value = JSON.stringify(educationData); };
-
-            // --- Achievements Section ---
-            let savedAchievements = @json(json_decode($content->get('home.achievements')?->value ?? '[]', true));
-            const defaultAchievements = [
-                { number: '2023', title: 'Top litigator', desc: 'Law Society of Kenya (Nairobi Branch)' },
-                { number: '50+', title: 'Cases Won', desc: 'High Court & Magistrates Court' },
-                { number: '98%', title: 'Client Satisfaction', desc: 'Based on exit surveys' },
-                { number: 'Pro', title: 'Pro Bono Award', desc: 'Service to Community' }
-            ];
-
-            if (!Array.isArray(savedAchievements)) savedAchievements = null;
-            let achievementsData = savedAchievements || defaultAchievements;
-
-            window.renderAchievements = function () {
-                const container = document.getElementById('achievements-list');
-                if (!container) return;
-                container.innerHTML = '';
-                achievementsData.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className = 'p-6 bg-slate-50 rounded-lg relative group h-full';
-                    row.innerHTML = `
-                                                                                <button type="button" onclick="removeAchievement(${index})" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                                                                </button>
-                                                                                <div class="space-y-4">
-                                                                                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Number/Year</label><input type="text" value="${item.number || ''}" oninput="updateAchievement(${index}, 'number', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                                                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Title</label><input type="text" value="${item.title || ''}" oninput="updateAchievement(${index}, 'title', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                                                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Description</label><input type="text" value="${item.desc || ''}" oninput="updateAchievement(${index}, 'desc', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                                                </div>`;
-                    container.appendChild(row);
-                });
-                document.getElementById('achievementsInput').value = JSON.stringify(achievementsData);
-            };
-            window.addAchievement = function () { achievementsData.push({ number: '', title: '', desc: '' }); renderAchievements(); };
-            window.removeAchievement = function (index) { safeConfirm('Remove Achievement', 'Remove this achievement?', () => { achievementsData.splice(index, 1); renderAchievements(); }); };
-            window.updateAchievement = function (index, key, value) { achievementsData[index][key] = value; document.getElementById('achievementsInput').value = JSON.stringify(achievementsData); };
-
-            // --- Social Media Section ---
-            let savedSocialMedia = @json(json_decode($content->get('footer.social_media')?->value ?? '[]', true));
-            const defaultSocialMedia = [
-                { platform: 'Twitter', url: 'https://twitter.com/', icon: 'twitter' },
-                { platform: 'LinkedIn', url: 'https://linkedin.com/', icon: 'linkedin' },
-                { platform: 'Facebook', url: 'https://facebook.com/', icon: 'facebook' }
-            ];
-
-            if (!Array.isArray(savedSocialMedia)) savedSocialMedia = null;
-            let socialMediaData = savedSocialMedia || defaultSocialMedia;
-
-            window.renderSocialMedia = function () {
-                const container = document.getElementById('social-media-list');
-                if (!container) return;
-                container.innerHTML = '';
-                socialMediaData.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className = 'p-6 bg-slate-50 rounded-lg relative group';
-                    row.innerHTML = `
-                                                                        <button type="button" onclick="removeSocialMedia(${index})" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                                                        </button>
-                                                                        <div class="grid md:grid-cols-2 gap-4">
-                                                                            <div>
-                                                                                <label class="block text-sm font-bold text-slate-700 mb-2">Platform</label>
-                                                                                <select onchange="updateSocialMedia(${index}, 'platform', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
-                                                                                    <option value="Twitter" ${item.platform === 'Twitter' ? 'selected' : ''}>Twitter</option>
-                                                                                    <option value="LinkedIn" ${item.platform === 'LinkedIn' ? 'selected' : ''}>LinkedIn</option>
-                                                                                    <option value="Facebook" ${item.platform === 'Facebook' ? 'selected' : ''}>Facebook</option>
-                                                                                    <option value="Instagram" ${item.platform === 'Instagram' ? 'selected' : ''}>Instagram</option>
-                                                                                    <option value="YouTube" ${item.platform === 'YouTube' ? 'selected' : ''}>YouTube</option>
-                                                                                    <option value="GitHub" ${item.platform === 'GitHub' ? 'selected' : ''}>GitHub</option>
-                                                                                    <option value="TikTok" ${item.platform === 'TikTok' ? 'selected' : ''}>TikTok</option>
-                                                                                    <option value="WhatsApp" ${item.platform === 'WhatsApp' ? 'selected' : ''}>WhatsApp</option>
-                                                                                </select>
-                                                                            </div>
-                                                                            <div><label class="block text-sm font-bold text-slate-700 mb-2">URL</label><input type="url" value="${item.url || ''}" oninput="updateSocialMedia(${index}, 'url', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white" placeholder="https://"></div>
-                                                                        </div>`;
-                    container.appendChild(row);
-                });
-                document.getElementById('socialMediaInput').value = JSON.stringify(socialMediaData);
-            };
-            window.addSocialMedia = function () { socialMediaData.push({ platform: 'Twitter', url: '' }); renderSocialMedia(); };
-            window.removeSocialMedia = function (index) { safeConfirm('Remove Platform', 'Remove this social media platform?', () => { socialMediaData.splice(index, 1); renderSocialMedia(); }); };
-            window.updateSocialMedia = function (index, key, value) { socialMediaData[index][key] = value; document.getElementById('socialMediaInput').value = JSON.stringify(socialMediaData); };
-
-            // --- Testimonials Section ---
-            let savedTestimonials = @json(json_decode($content->get('home.testimonials')?->value ?? '[]', true));
-            if (!Array.isArray(savedTestimonials)) savedTestimonials = null;
-            let testimonialsData = savedTestimonials || [
-                { name: 'John Doe', role: 'CEO, Tech Corp', review: 'Brian provided excellent legal counsel during our merger. Highly recommended.' }
-            ];
-
-            window.renderTestimonials = function () {
-                const container = document.getElementById('testimonials-list');
-                if (!container) return;
-                container.innerHTML = '';
-                testimonialsData.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className = 'p-6 bg-slate-50 rounded-lg relative group';
-                    row.innerHTML = `
-                                                <button type="button" onclick="removeTestimonial(${index})" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                                </button>
-                                                <div class="space-y-4">
-                                                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Client Name</label><input type="text" value="${item.name || ''}" oninput="updateTestimonial(${index}, 'name', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Role / Company</label><input type="text" value="${item.role || ''}" oninput="updateTestimonial(${index}, 'role', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Review</label><textarea rows="3" oninput="updateTestimonial(${index}, 'review', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">${item.review || ''}</textarea></div>
-                                                </div>`;
-                    container.appendChild(row);
-                });
-                document.getElementById('testimonialsInput').value = JSON.stringify(testimonialsData);
-            };
-            window.addTestimonial = function () { testimonialsData.push({ name: '', role: '', review: '' }); renderTestimonials(); };
-            window.removeTestimonial = function (index) { safeConfirm('Remove Review', 'Remove this testimonial?', () => { testimonialsData.splice(index, 1); renderTestimonials(); }); };
-            window.updateTestimonial = function (index, key, value) { testimonialsData[index][key] = value; document.getElementById('testimonialsInput').value = JSON.stringify(testimonialsData); };
-
-            // --- Practice Areas Section ---
-            let savedPracticeAreas = @json(json_decode($content->get('home.practice_areas')?->value ?? '[]', true));
-            if (!Array.isArray(savedPracticeAreas)) savedPracticeAreas = null;
-            let practiceAreasData = savedPracticeAreas || [
-                { title: 'Corporate Law', icon: 'Building', desc: 'Company formation, contracts, compliance.' },
-                { title: 'Civil Litigation', icon: 'Gavel', desc: 'Representation in disputes and advocacy.' },
-                { title: 'Family Law', icon: 'Users', desc: 'Divorce, custody, and succession matters.' }
-            ];
-
-            const practiceIcons = ['Building', 'Gavel', 'Users', 'Scale', 'Briefcase', 'FileText', 'Shield'];
-
-            window.renderPracticeAreas = function () {
-                const container = document.getElementById('practice-areas-list');
-                if (!container) return;
-                container.innerHTML = '';
-                practiceAreasData.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className = 'p-6 bg-slate-50 rounded-lg relative group';
-
-                    let iconOptions = practiceIcons.map(icon => `<option value="${icon}" ${item.icon === icon ? 'selected' : ''}>${icon}</option>`).join('');
-
-                    row.innerHTML = `
-                                                        <button type="button" onclick="removePracticeArea(${index})" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                                        </button>
-                                                        <div class="grid md:grid-cols-2 gap-4">
-                                                            <div><label class="block text-sm font-bold text-slate-700 mb-2">Service Title</label><input type="text" value="${item.title || ''}" oninput="updatePracticeArea(${index}, 'title', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white"></div>
-                                                            <div>
-                                                                <label class="block text-sm font-bold text-slate-700 mb-2">Icon</label>
-                                                                <select onchange="updatePracticeArea(${index}, 'icon', this.value)" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
-                                                                    ${iconOptions}
-                                                                </select>
-                                                            </div>
-                                                            <div class="md:col-span-2"><label class="block text-sm font-bold text-slate-700 mb-2">Description</label><textarea oninput="updatePracticeArea(${index}, 'desc', this.value)" rows="2" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">${item.desc || ''}</textarea></div>
-                                                        </div>`;
-                    container.appendChild(row);
-                });
-                document.getElementById('practiceAreasInput').value = JSON.stringify(practiceAreasData);
-            };
-            window.addPracticeArea = function () { practiceAreasData.push({ title: '', icon: 'Gavel', desc: '' }); renderPracticeAreas(); };
-            window.removePracticeArea = function (index) { safeConfirm('Remove Service', 'Remove this practice area?', () => { practiceAreasData.splice(index, 1); renderPracticeAreas(); }); };
-            window.updatePracticeArea = function (index, key, value) { practiceAreasData[index][key] = value; document.getElementById('practiceAreasInput').value = JSON.stringify(practiceAreasData); };
-
-            // Initial Render
-            renderExperience();
-            renderEducation();
-            renderAchievements();
-            renderPracticeAreas();
-            renderSocialMedia();
-            renderTestimonials();
-        });
-    </script>
-
-    <!-- Summernote CSS -->
+    <!-- Summernote Assets -->
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
-
-    <!-- jQuery (required for Summernote) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Summernote JS -->
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 
     <script>
-        $(document).ready(function () {
-            $('.summernote').summernote({
-                height: 150,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'italic', 'underline', 'clear']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['insert', ['link']],
-                    ['view', ['codeview', 'help']]
-                ]
+            $(document).ready(function() {
+                $('.rich-text-editor').summernote({
+                    height: 400,
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'italic', 'underline', 'clear']],
+                        ['fontsize', ['fontsize']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['insert', ['link']],
+                        ['view', ['codeview']]
+                    ]
+                });
             });
-        });
-    </script>
+
+            function switchTab(tabId)           {
+                document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+                document.getElementById('tab-' + tabId).classList.remove('hidden');
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('active', 'border-slate-900', 'text-slate-900');
+                    btn.classList.add('border-transparent', 'text-slate-400');
+                });
+                const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+                activeBtn.classList.remove('border-transparent', 'text-slate-400');
+                activeBtn.classList.add('active', 'border-slate-900', 'text-slate-900');
+            }
+
+            function previewImage(input, imgId) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.getElementById(imgId).src = e.target.result;
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+            function addItem(type) {
+                const container = document.getElementById(type + '-container');
+                const tpl = document.getElementById('tpl-' + type);
+                // Calculate new index based on current children count (hacky but works for simple appends)
+                // Better way: defined a counter global or random ID.
+                // PHP-style array content[home.experience][] works too if we don't care about explicit keys, 
+                // but for safety let's use a timestamp or count.
+                const index = new Date().getTime();
+
+                let html = tpl.innerHTML.replace(/INDEX/g, index);
+
+                // Append
+                let tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                container.appendChild(tempDiv.firstElementChild);
+            }
+        </script>
 @endsection

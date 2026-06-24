@@ -73,7 +73,7 @@ class PublicController extends Controller
             ->where('id', '!=', $post->id)
             ->whereNotNull('published_at')
             ->orderBy('published_at', 'desc')
-            ->take(4)
+            ->take(2)
             ->get();
 
         return view('pages.posts.show', compact('post', 'recentPosts'));
@@ -90,7 +90,7 @@ class PublicController extends Controller
             ->where('id', '!=', $post->id)
             ->whereNotNull('published_at')
             ->orderBy('published_at', 'desc')
-            ->take(4)
+            ->take(2)
             ->get();
 
         return view('pages.posts.show-insight', compact('post', 'recentPosts'));
@@ -101,6 +101,12 @@ class PublicController extends Controller
         $content = SiteContent::all()->keyBy('key');
         return view('pages.contact', compact('content'));
     }
+
+    public function faq()
+    {
+        return view('pages.faq');
+    }
+
 
     public function privacy()
     {

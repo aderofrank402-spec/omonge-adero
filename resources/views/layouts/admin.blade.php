@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Brian Adero</title>
+    <title>Admin Dashboard | Omonge Adero</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
         rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="icon" type="image/jpeg" href="{{ asset('assets/images/aderologo.jpeg') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -29,6 +29,7 @@
             background-color: #F5F7FA;
         }
     </style>
+    <x-dynamic-styles />
 </head>
 
 <body class="antialiased text-slate-800">
@@ -43,10 +44,7 @@
             <!-- Logo -->
             <div class="p-6 border-b border-slate-800 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div
-                        class="w-10 h-10 bg-white flex items-center justify-center text-slate-900 font-serif font-bold text-xl">
-                        B
-                    </div>
+                    <img src="/assets/images/aderologo.jpeg" alt="Logo" class="w-12 h-12 object-contain rounded-md">
                     <div>
                         <div class="font-serif text-lg font-bold">Brian Adero</div>
                         <div class="text-xs text-slate-400">Admin Panel</div>
@@ -115,6 +113,15 @@
                             d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                     </svg>
                     <span class="font-medium">Contact Inquiries</span>
+                </a>
+
+                <a href="{{ route('admin.comments.index') }}"
+                    class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors rounded-lg {{ request()->routeIs('admin.comments.*') ? 'bg-slate-800 text-white' : '' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                    <span class="font-medium">Comments</span>
                 </a>
             </nav>
 

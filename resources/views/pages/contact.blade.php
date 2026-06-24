@@ -3,7 +3,7 @@
 @section('content')
     <!-- Header / Hero Section -->
     <header
-        class="relative pt-24 sm:pt-28 md:pt-32 pb-16 sm:pb-20 bg-gradient-to-br from-[#E0E7FF] to-[#F5F7FA] dark:from-slate-900 dark:to-slate-800 transition-colors duration-300">
+        class="relative pt-24 sm:pt-28 md:pt-32 pb-16 sm:pb-20 bg-[#F0F7FF] dark:from-slate-900 dark:to-slate-800 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center fade-up">
             <span
                 class="text-xs font-bold tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase mb-4 block">{{ $content['contact.hero.subtitle']->value ?? 'Get In Touch' }}</span>
@@ -18,7 +18,7 @@
     </header>
 
     <!-- Contact Content -->
-    <section class="py-16 sm:py-20 md:py-24 bg-white dark:bg-slate-900 transition-colors duration-300">
+    <section class="py-16 sm:py-20 md:py-24 bg-[#F8FAFF] dark:bg-slate-900 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-12 md:gap-16">
 
             <!-- Contact Info -->

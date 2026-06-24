@@ -75,6 +75,9 @@ class PostController extends Controller
             'published_at' => 'nullable|date',
             'key_takeaways' => 'nullable|string',
             'citation' => 'nullable|string',
+            'seo_title' => 'nullable|string|max:255',
+            'seo_description' => 'nullable|string|max:300',
+            'image_alt' => 'nullable|string|max:255',
         ]);
 
         // Generate slug from title
@@ -153,6 +156,9 @@ class PostController extends Controller
             'remove_image' => 'nullable|boolean',
             'key_takeaways' => 'nullable|string',
             'citation' => 'nullable|string',
+            'seo_title' => 'nullable|string|max:255',
+            'seo_description' => 'nullable|string|max:300',
+            'image_alt' => 'nullable|string|max:255',
         ]);
 
         // Update slug if title changed

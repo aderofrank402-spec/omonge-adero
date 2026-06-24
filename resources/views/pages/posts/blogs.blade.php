@@ -39,13 +39,13 @@
     <section class="py-16 sm:py-20 md:py-24 bg-white dark:bg-slate-900 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
             @if($posts->count() > 0)
-                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                     @foreach($posts as $post)
                         <article
                             class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 fade-up">
                             @if($post->image_path)
                                 <div class="aspect-video bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                                    <img src="{{ asset('storage/' . $post->image_path) }}" alt="{{ $post->title }}"
+                                    <img src="{{ $post->image_url }}" alt="{{ $post->title }}" loading="lazy"
                                         class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
                                 </div>
                             @else

@@ -23,7 +23,7 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.posts.store') }}" method="POST" enctype="multipart/form-data" class="max-w-4xl">
+    <form id="postForm" action="{{ route('admin.posts.store') }}" method="POST" enctype="multipart/form-data" class="max-w-4xl">
         @csrf
 
         <div class="bg-white rounded-lg border border-slate-200 p-8 space-y-6">
@@ -97,7 +97,7 @@
                 @error('content')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
-                <p class="mt-2 text-sm text-slate-500">Write your content here. Line breaks will be preserved.</p>
+                <p class="mt-2 text-sm text-slate-500">Write your content here. Use the toolbar to add links and formatting.</p>
             </div>
 
             <!-- Image Upload -->
@@ -110,6 +110,39 @@
                 @enderror
                 <p class="mt-2 text-sm text-slate-500">Recommended size: 1200x630px. Max 10MB. Formats: JPEG, PNG, GIF, WebP
                 </p>
+            </div>
+
+            <!-- Image Alt Text -->
+            <div>
+                <label for="image_alt" class="block text-sm font-bold text-slate-700 mb-2">Image Description (Alt
+                    Text)</label>
+                <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt') }}"
+                    class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                    placeholder="Describe the image for accessibility and SEO">
+            </div>
+
+            <!-- SEO Settings -->
+            <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                <h3 class="font-bold text-slate-900 mb-4">SEO Settings (Optional)</h3>
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="seo_title" class="block text-sm font-bold text-slate-700 mb-2">SEO Title</label>
+                        <input type="text" id="seo_title" name="seo_title" value="{{ old('seo_title') }}"
+                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                            placeholder="Custom title for Google search results (defaults to Post Title)">
+                        <p class="mt-1 text-xs text-slate-500">Recommended: 60 characters max.</p>
+                    </div>
+
+                    <div>
+                        <label for="seo_description" class="block text-sm font-bold text-slate-700 mb-2">Meta
+                            Description</label>
+                        <textarea id="seo_description" name="seo_description" rows="3"
+                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent">{{ old('seo_description') }}</textarea>
+                        <p class="mt-1 text-xs text-slate-500">Recommended: 160 characters max. Appears in search results
+                            under the title.</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Publish Date -->
@@ -126,23 +159,31 @@
             </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex items-center justify-between mt-6">
+        <!-- Cancel Link (Keep at bottom for context) -->
+        <div class="mt-6">
             <a href="{{ route('admin.posts.index', ['type' => request('type')]) }}"
-                class="px-6 py-3 text-slate-700 hover:text-slate-900 font-medium">
-                Cancel
+                class="px-6 py-3 text-slate-700 hover:text-slate-900 font-medium inline-block">
+                ← Back to Posts
             </a>
-            <div class="flex gap-3">
-                <button type="submit" name="action" value="draft"
-                    class="px-6 py-3 bg-white border-2 border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium">
-                    Save as Draft
-                </button>
-                <button type="submit" name="action" value="publish"
-                    class="px-6 py-3 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium">
-                    Publish Now
-                </button>
-            </div>
         </div>
+    </form>
+
+    <!-- Floating Save Buttons -->
+    <div class="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
+        <button type="submit" form="postForm" name="action" value="draft"
+            class="px-6 py-3 bg-white border-2 border-slate-700 text-slate-700 rounded-full hover:bg-slate-50 transition-all shadow-xl font-bold uppercase tracking-wider text-sm">
+            Save Draft
+        </button>
+        <button type="submit" form="postForm" name="action" value="publish"
+            class="px-8 py-4 bg-slate-900 text-white rounded-full hover:bg-slate-800 transition-all shadow-2xl hover:shadow-slate-900/50 font-bold uppercase tracking-wider text-sm flex items-center gap-3 group">
+            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Publish Now
+        </button>
+    </div>
+
+    <!-- Close the form tag that was left open -->
         <!-- Insight Toggle Script -->
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -189,7 +230,9 @@
                         ['view', ['codeview', 'help']]
                     ],
                     fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact', 'Tahoma', 'Times New Roman', 'Verdana'],
-                    fontNamesIgnoreCheck: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact', 'Tahoma', 'Times New Roman', 'Verdana']
+                    fontNamesIgnoreCheck: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact', 'Tahoma', 'Times New Roman', 'Verdana'],
+                    dialogsInBody: true,
+                    dialogsFade: true
                 });
             });
         </script>

@@ -4,7 +4,8 @@
 @section('page-subtitle', 'Update post details')
 
 @section('content')
-    <form action="{{ route('admin.posts.update', $post) }}" method="POST" enctype="multipart/form-data" class="max-w-4xl">
+    <form id="postForm" action="{{ route('admin.posts.update', $post) }}" method="POST" enctype="multipart/form-data"
+        class="max-w-4xl">
         @csrf
         @method('PUT')
 
@@ -111,6 +112,15 @@
                 @enderror
             </div>
 
+            <!-- Image Alt Text -->
+            <div>
+                <label for="image_alt" class="block text-sm font-bold text-slate-700 mb-2">Image Description (Alt
+                    Text)</label>
+                <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt', $post->image_alt) }}"
+                    class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                    placeholder="Describe the image for accessibility and SEO">
+            </div>
+
             <!-- Current Attachment -->
             @if($post->attachment_path)
                 <div>
@@ -148,41 +158,28 @@
                 <p class="mt-2 text-sm text-slate-500">Upload a PDF document. Max 10MB.</p>
             </div>
 
-            <!-- Current Attachment -->
-            @if($post->attachment_path)
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Current PDF Attachment</label>
-                    <div class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                        <div class="flex items-center gap-3">
-                            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                            <a href="{{ asset('storage/' . $post->attachment_path) }}" target="_blank"
-                                class="text-sm font-medium text-slate-900 hover:text-blue-600 underline">
-                                View PDF
-                            </a>
-                        </div>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" name="remove_attachment" value="1"
-                                class="rounded border-slate-300 text-red-600 focus:ring-red-500">
-                            <span class="text-sm text-red-600 font-medium">Remove</span>
-                        </label>
+            <!-- SEO Settings -->
+            <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 mb-6">
+                <h3 class="font-bold text-slate-900 mb-4">SEO Settings (Optional)</h3>
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="seo_title" class="block text-sm font-bold text-slate-700 mb-2">SEO Title</label>
+                        <input type="text" id="seo_title" name="seo_title" value="{{ old('seo_title', $post->seo_title) }}"
+                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                            placeholder="Custom title for Google search results (defaults to Post Title)">
+                        <p class="mt-1 text-xs text-slate-500">Recommended: 60 characters max.</p>
+                    </div>
+
+                    <div>
+                        <label for="seo_description" class="block text-sm font-bold text-slate-700 mb-2">Meta
+                            Description</label>
+                        <textarea id="seo_description" name="seo_description" rows="3"
+                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent">{{ old('seo_description', $post->seo_description) }}</textarea>
+                        <p class="mt-1 text-xs text-slate-500">Recommended: 160 characters max. Appears in search results
+                            under the title.</p>
                     </div>
                 </div>
-            @endif
-
-            <!-- PDF Attachment Upload -->
-            <div class="mb-6">
-                <label for="attachment" class="block text-sm font-bold text-slate-700 mb-2">
-                    {{ $post->attachment_path ? 'Replace PDF Attachment' : 'PDF Attachment' }} (Optional)
-                </label>
-                <input type="file" id="attachment" name="attachment" accept="application/pdf"
-                    class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent @error('attachment') border-red-500 @enderror">
-                @error('attachment')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-                <p class="mt-2 text-sm text-slate-500">Upload a PDF document. Max 10MB.</p>
             </div>
 
             <!-- Publish Date -->
@@ -198,18 +195,24 @@
             </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex items-center justify-between mt-6">
+        <!-- Cancel Link (Keep at bottom for context) -->
+        <div class="mt-6">
             <a href="{{ route('admin.posts.index', ['type' => $post->type]) }}"
-                class="px-6 py-3 text-slate-700 hover:text-slate-900 font-medium">
-                Cancel
+                class="px-6 py-3 text-slate-700 hover:text-slate-900 font-medium inline-block">
+                ← Back to Posts
             </a>
-            <button type="submit"
-                class="px-6 py-3 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium">
-                Update Post
-            </button>
         </div>
     </form>
+
+    <!-- Floating Save Button -->
+    <button type="submit" form="postForm"
+        class="fixed bottom-8 right-8 z-50 px-8 py-4 bg-slate-900 text-white rounded-full hover:bg-slate-800 transition-all shadow-2xl hover:shadow-slate-900/50 font-bold uppercase tracking-wider text-sm flex items-center gap-3 group">
+        <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        Update Post
+    </button>
 
     <!-- Summernote CSS -->
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
@@ -237,7 +240,9 @@
                     ['view', ['codeview', 'help']]
                 ],
                 fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact', 'Tahoma', 'Times New Roman', 'Verdana'],
-                fontNamesIgnoreCheck: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact', 'Tahoma', 'Times New Roman', 'Verdana']
+                fontNamesIgnoreCheck: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact', 'Tahoma', 'Times New Roman', 'Verdana'],
+                dialogsInBody: true,
+                dialogsFade: true
             });
         });
     </script>

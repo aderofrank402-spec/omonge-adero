@@ -29,6 +29,10 @@ class VerifySubscription extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
+            from: new \Illuminate\Mail\Mailables\Address(
+                config('mail.from.address'),
+                'Omonge Adero'
+            ),
             subject: 'Confirm Your Subscription',
         );
     }

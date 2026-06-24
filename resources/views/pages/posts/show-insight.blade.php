@@ -1,13 +1,12 @@
 @extends('layouts.site')
 
-@section('title', $post->title . ' | Brian Adero')
-@section('description', $post->excerpt)
+@section('title', ($post->seo_title ?? $post->title) . ' | Brian Adero')
+@section('description', $post->seo_description ?? $post->excerpt)
 
 @section('meta')
     <meta property="og:title" content="{{ $post->title }}">
     <meta property="og:description" content="{{ $post->excerpt }}">
-    <meta property="og:image"
-        content="{{ $post->image_path ? asset('storage/' . $post->image_path) : asset('assets/images/brian.jpeg') }}">
+    <meta property="og:image" content="{{ $post->image_path ? $post->image_url : asset('assets/images/brian.jpeg') }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="article">
     <meta name="twitter:card" content="summary_large_image">
@@ -51,14 +50,41 @@
                 <aside class="lg:col-span-3 lg:order-1 order-2 space-y-12">
                     <div class="sticky top-32">
                         <div class="mb-8">
-                            <a href="{{ route('insights.index') }}"
-                                class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 19l-7-7 7-7" />
-                                </svg>
-                                Back to Insights
-                            </a>
+                            <!-- Breadcrumbs -->
+                            <nav class="flex text-xs font-bold tracking-widest uppercase text-slate-500 dark:text-slate-400"
+                                aria-label="Breadcrumb">
+                                <ol class="inline-flex items-center space-x-2">
+                                    <li class="inline-flex items-center">
+                                        <a href="{{ route('home') }}"
+                                            class="hover:text-slate-900 dark:hover:text-white transition-colors">
+                                            Home
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="flex items-center">
+                                            <svg class="w-3 h-3 text-slate-400 mx-1" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5l7 7-7 7" />
+                                            </svg>
+                                            <a href="{{ route('insights.index') }}"
+                                                class="hover:text-slate-900 dark:hover:text-white transition-colors">
+                                                Insights
+                                            </a>
+                                        </div>
+                                    </li>
+                                    <li aria-current="page">
+                                        <div class="flex items-center">
+                                            <svg class="w-3 h-3 text-slate-400 mx-1" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5l7 7-7 7" />
+                                            </svg>
+                                            <span class="text-slate-400 truncate max-w-[150px]">{{ $post->title }}</span>
+                                        </div>
+                                    </li>
+                                </ol>
+                            </nav>
                         </div>
 
                         <!-- Author Block -->
@@ -66,7 +92,7 @@
                             <h4 class="font-serif text-lg text-slate-900 dark:text-white font-bold mb-4 transition-colors">
                                 About the Author</h4>
                             <div class="flex items-center gap-4 mb-4">
-                                <img src="{{ asset('assets/images/brian.jpeg') }}"
+                                <img src="{{ asset('assets/images/brian.jpeg') }}" loading="lazy"
                                     class="w-12 h-12 rounded-full object-cover">
                                 <div>
                                     <div class="font-bold text-slate-900 dark:text-white text-sm transition-colors">Brian
@@ -142,13 +168,32 @@
                     @if($post->image_path)
                         <div
                             class="aspect-[21/9] bg-slate-200 dark:bg-slate-800 overflow-hidden mb-12 shadow-sm border border-slate-200 dark:border-slate-800 transition-colors">
-                            <img src="{{ asset('storage/' . $post->image_path) }}" alt="{{ $post->title }}"
+                            <img src="{{ $post->image_url }}" alt="{{ $post->image_alt ?? $post->title }}"
                                 class="w-full h-full object-cover grayscale opacity-90 hover:grayscale-0 transition-all duration-700">
                         </div>
                     @endif
 
                     <div
                         class="prose prose-lg prose-slate dark:prose-invert max-w-none font-serif text-slate-800 dark:text-slate-300 leading-loose transition-colors">
+                        {{-- Force Link Styling due to Tailwind Reset --}}
+                        <style>
+                            .prose a {
+                                color: #1d4ed8 !important;
+                                text-decoration: underline !important;
+                            }
+
+                            .dark .prose a {
+                                color: #60a5fa !important;
+                            }
+
+                            .prose a:hover {
+                                color: #1e3a8a !important;
+                            }
+
+                            .dark .prose a:hover {
+                                color: #93c5fd !important;
+                            }
+                        </style>
                         <!-- Drop cap for first paragraph -->
                         <style>
                             .prose p:first-of-type::first-letter {
@@ -212,4 +257,210 @@
             </div>
         </section>
     @endif
+
+    {{-- Comments Section --}}
+    <div class="max-w-7xl mx-auto px-6 pb-20">
+        <div class="mt-16 pt-12 border-t border-slate-200 dark:border-slate-800">
+            <h3 class="font-serif text-3xl font-bold text-slate-900 dark:text-white mb-8">
+                Comments <span
+                    class="text-slate-500 dark:text-slate-400 text-xl">({{ $post->approvedComments->count() }})</span>
+            </h3>
+
+            {{-- Success/Error Messages --}}
+            @if (session('success'))
+                <div
+                    class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-800 dark:text-green-200">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('comment_error'))
+                <div
+                    class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-200">
+                    {{ session('comment_error') }}
+                </div>
+            @endif
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                {{-- Left Column: Comment Form --}}
+                <div class="lg:col-span-4">
+                    <div
+                        class="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 sticky top-24">
+                        <h4 class="font-bold text-slate-900 dark:text-white mb-4">Leave a Comment</h4>
+                        <form action="{{ route('comments.store', $post->slug) }}" method="POST" class="space-y-4">
+                            @csrf
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="name"
+                                        class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Name
+                                        *</label>
+                                    <input type="text" id="name" name="name" required value="{{ old('name') }}"
+                                        class="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white @error('name') border-red-500 @enderror">
+                                    @error('name')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label for="email"
+                                        class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Email
+                                        *</label>
+                                    <input type="email" id="email" name="email" required value="{{ old('email') }}"
+                                        class="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white @error('email') border-red-500 @enderror">
+                                    @error('email')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label for="comment"
+                                        class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Comment
+                                        *</label>
+                                    <textarea id="comment" name="comment" rows="6" required
+                                        class="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white @error('comment') border-red-500 @enderror">{{ old('comment') }}</textarea>
+                                    @error('comment')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Your email will not be
+                                        published. Max 1000 characters.</p>
+                                </div>
+                                <button type="submit"
+                                    class="w-full px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-lg hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors">
+                                    Post Comment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {{-- Right Column: Display Comments --}}
+                <div class="lg:col-span-8">
+                    @if ($post->approvedComments->count() > 0)
+                        <div id="comments-list" class="space-y-6">
+                            @foreach ($post->approvedComments->take(15) as $comment)
+                                <div
+                                    class="p-6 bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700 rounded-lg">
+                                    <div class="flex items-start gap-4">
+                                        {{-- Avatar --}}
+                                        <div
+                                            class="flex-shrink-0 w-12 h-12 bg-slate-900 dark:bg-slate-700 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                                            {{ strtoupper(substr($comment->name, 0, 1)) }}
+                                        </div>
+                                        {{-- Content --}}
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <span class="font-bold text-slate-900 dark:text-white">{{ $comment->name }}</span>
+                                                <span
+                                                    class="text-sm text-slate-500 dark:text-slate-400">{{ $comment->created_at->diffForHumans() }}</span>
+                                            </div>
+                                            <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                                {{ $comment->comment }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        @if ($post->approvedComments->count() > 15)
+                            <div class="mt-8 text-center">
+                                <button id="load-more-comments" data-offset="15" data-post-slug="{{ $post->slug }}"
+                                    class="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                    Load More Comments
+                                </button>
+                            </div>
+                        @endif
+
+                        <script>
+                            document.getElementById('load-more-comments')?.addEventListener('click', async function () {
+                                const button = this;
+                                const offset = parseInt(button.dataset.offset);
+                                const postSlug = button.dataset.postSlug;
+
+                                button.disabled = true;
+                                button.textContent = 'Loading...';
+
+                                try {
+                                    const response = await fetch(`/posts/${postSlug}/comments/load-more?offset=${offset}`);
+                                    const data = await response.json();
+
+                                    const commentsList = document.getElementById('comments-list');
+
+                                    data.comments.forEach(comment => {
+                                        const commentDiv = document.createElement('div');
+                                        commentDiv.className =
+                                            'p-6 bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700 rounded-lg';
+
+                                        const createdAt = new Date(comment.created_at);
+                                        const timeAgo = getTimeAgo(createdAt);
+
+                                        commentDiv.innerHTML = `
+                                                                                    <div class="flex items-start gap-4">
+                                                                                        <div class="flex-shrink-0 w-12 h-12 bg-slate-900 dark:bg-slate-700 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                                                                                            ${comment.name.charAt(0).toUpperCase()}
+                                                                                        </div>
+                                                                                        <div class="flex-1">
+                                                                                            <div class="flex items-center gap-3 mb-2">
+                                                                                                <span class="font-bold text-slate-900 dark:text-white">${comment.name}</span>
+                                                                                                <span class="text-sm text-slate-500 dark:text-slate-400">${timeAgo}</span>
+                                                                                            </div>
+                                                                                            <p class="text-slate-700 dark:text-slate-300 leading-relaxed">${comment.comment}</p>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                `;
+
+                                        commentsList.appendChild(commentDiv);
+                                    });
+
+                                    button.dataset.offset = offset + 15;
+
+                                    if (!data.hasMore) {
+                                        button.remove();
+                                    } else {
+                                        button.disabled = false;
+                                        button.textContent = 'Load More Comments';
+                                    }
+                                } catch (error) {
+                                    console.error('Error loading comments:', error);
+                                    button.disabled = false;
+                                    button.textContent = 'Load More Comments';
+                                }
+                            });
+
+                            function getTimeAgo(date) {
+                                const seconds = Math.floor((new Date() - date) / 1000);
+                                const intervals = {
+                                    year: 31536000,
+                                    month: 2592000,
+                                    week: 604800,
+                                    day: 86400,
+                                    hour: 3600,
+                                    minute: 60
+                                };
+
+                                for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+                                    const interval = Math.floor(seconds / secondsInUnit);
+                                    if (interval >= 1) {
+                                        return interval === 1 ? `1 ${unit} ago` : `${interval} ${unit}s ago`;
+                                    }
+                                }
+                                return 'just now';
+                            }
+                        </script>
+                    @else
+                        <div
+                            class="h-full flex items-center justify-center p-12 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700 border-dashed">
+                            <div class="text-center">
+                                <svg class="w-12 h-12 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                                <p class="text-slate-500 dark:text-slate-400">No comments yet. Be the first to share your
+                                    thoughts!</p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

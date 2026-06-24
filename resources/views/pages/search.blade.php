@@ -51,7 +51,7 @@
                             style="animation-delay: {{ $index * 100 }}ms">
                             <div class="h-48 overflow-hidden relative">
                                 @if($post->image)
-                                    <img src="{{ asset('storage/' . $post->image) }}" alt="{{ $post->title }}"
+                                    <img src="{{ $post->image_url }}" alt="{{ $post->title }}" loading="lazy"
                                         class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500">
                                 @else
                                     <div class="w-full h-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-300 dark:text-slate-500 transition-colors">
